@@ -24,10 +24,13 @@ Database commands:
 
     ```
     1. To initialize the database run:
-        flask db init
+            flask db init
+        NOTE: You do not have to initializa the database now. (Pinkesh has done it).
+              You just have to run the below commands whenever you make changes in model
+
     2. After you make changes in the models.py file or add a new one run the following commands:
-        flask db migrate
-        flask db upgrade
+            flask db migrate
+            flask db upgrade
     This will create migrations and update them on the server.
     NOTE: Do not keep the app running while running this command
 
