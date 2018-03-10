@@ -1,4 +1,4 @@
-# README #
+# Software Engineering project: Parking Lot
 
 Set up environment:
 
