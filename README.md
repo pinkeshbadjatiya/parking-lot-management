@@ -9,6 +9,7 @@ Set up environment:
     ```
 
 Run the app:
+    NOTE: You have to be in the home folder of the repository to execute these commands
 
     --> To run the server
         export FLASK_APP=ParkingLotServer

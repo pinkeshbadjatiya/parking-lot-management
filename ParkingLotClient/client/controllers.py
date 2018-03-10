@@ -12,8 +12,8 @@ from flask import Flask, render_template
 
 from flask import url_for
 
-mod_admin = Blueprint('admin', __name__)
+mod_client = Blueprint('client', __name__)
 
-@mod_admin.route('/utilization', methods=['GET'])
+@mod_client.route('/utilization', methods=['GET'])
 def view_utilization():
     return render_template('dashboard.html', headerTitle='Parking Lot - Dashboard')

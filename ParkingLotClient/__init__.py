@@ -15,7 +15,7 @@ def init_db(db):
 
 
 app = Flask(__name__)
-app.config.from_object('dev_config')
+app.config.from_object('client_config')
 db = SQLAlchemy(app)
 init_db(db)
 migrate = Migrate(app, db)
@@ -37,10 +37,10 @@ def load_user(user_id):
 ####################
 
 from server.authentication.controllers import mod_auth
-from server.admin.controllers import mod_admin
+from server.client.controllers import mod_client
 
 app.register_blueprint(mod_auth, url_prefix='/auth')
-app.register_blueprint(mod_admin, url_prefix='/admin')
+app.register_blueprint(mod_client, url_prefix='/client')
 
 if __name__=="__main__":
     app.run(host='0.0.0.0', port=8080)

@@ -15,7 +15,7 @@ def init_db(db):
 
 
 app = Flask(__name__)
-app.config.from_object('dev_config')
+app.config.from_object('server_config')
 db = SQLAlchemy(app)
 init_db(db)
 migrate = Migrate(app, db)
