@@ -24,6 +24,7 @@ Run the app:
 Database commands:
 
     ```
+    NOTE: While running any of these commads, you have to be in the home folder and must have run the export command above.
     1. To initialize the database run:
             >> flask db init
         NOTE: You do not have to initializa the database now. (Pinkesh has done it).
