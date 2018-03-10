@@ -1,9 +1,9 @@
-from server import db
+from ParkingLotServer import db
 from passlib.hash import argon2
 
 
 class User(db.Model):
-     
+
     __tablename__ = "user"
 
     id = db.Column(db.Integer, primary_key=True)

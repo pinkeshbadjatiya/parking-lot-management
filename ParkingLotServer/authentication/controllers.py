@@ -5,7 +5,7 @@ import arrow
 import jwt
 from passlib.hash import argon2
 
-from server import app, db
+from ParkingLotServer import app, db
 from flask_login import login_required
 from .models import Users
 
@@ -17,8 +17,8 @@ mod_auth = Blueprint('authentication', __name__)
 @mod_auth.route('/', methods=['GET'])
 @login_required
 def home():
-    print g.user
-    return "WOW!"
+    print current_user
+    return "WOW! Welcome %s." %(current_user.email)
 
 @mod_auth.route('/login', methods=['GET','POST'])
 def login():

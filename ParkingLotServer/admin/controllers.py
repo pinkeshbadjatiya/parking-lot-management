@@ -5,7 +5,7 @@ import arrow
 import jwt
 from passlib.hash import argon2
 
-from server import app
+from ParkingLotServer import app
 from flask_login import login_required
 from flask import Flask, render_template
 #from .models import User

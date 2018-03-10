@@ -36,8 +36,8 @@ def load_user(user_id):
 # Blueprints
 ####################
 
-from server.authentication.controllers import mod_auth
-from server.admin.controllers import mod_admin
+from ParkingLotServer.authentication.controllers import mod_auth
+from ParkingLotServer.admin.controllers import mod_admin
 
 app.register_blueprint(mod_auth, url_prefix='/auth')
 app.register_blueprint(mod_admin, url_prefix='/admin')
