@@ -1,0 +1,8 @@
+*.pyc
+*.sqlite3
+__pycache__/
+*.egg-info/
+*.sqlite3
+build
+dist
+logs

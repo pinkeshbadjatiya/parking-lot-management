@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+	<title>Parking Lot Administration</title>
+	<link href="common.css" rel="stylesheet">
+ 	<link href="http://getbootstrap.com/dist/css/bootstrap.min.css" rel="stylesheet">
+	<link href="http://getbootstrap.com/examples/jumbotron-narrow/jumbotron-narrow.css" rel="stylesheet">
+	<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+	</head>
+
+	<body>
+	<div class="container">
+      <div style="padding-top:0.5em">
+        <h1>{{headerTitle}}</h1>
+      </div>
+
+      <div class="jumbotron">
+		{% block content %}{% endblock %}
+      </div>
+ 
+      <footer class="footer">
+        <p>&copy; Team-3 2018</p>
+      </footer>
+ 
+    </div>
+  </body>
+</html>
