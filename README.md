@@ -12,11 +12,11 @@ Run the app:
     
     NOTE: You have to be in the home folder of the repository to execute these commands
     --> To run the server
-        >> export FLASK_APP=ParkingLotServer
+        >> export FLASK_APP=ParkingLotServer/__init__.py
         >> flask run
 
     --> To run the client
-        >> export FLASK_APP=ParkingLotClient
+        >> export FLASK_APP=ParkingLotClient/__init__.py
         >> flask run
 
 =============================================================
