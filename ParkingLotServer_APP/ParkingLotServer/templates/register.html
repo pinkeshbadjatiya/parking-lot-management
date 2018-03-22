@@ -1,39 +1,24 @@
 {% extends "base.html" %}
 {% block content %}
-  <form action="" method=post class="form-horizontal">
-    <h2> Signup </h2>
-    <div class="control-group">
-        <div class="controls">
-          <input type="text" id="firstname" name="firstname" class="input-xlarge"
-            placeholder="Enter FirstName" value="{{ request.form.firstname }}"
-            required>
-        </div>
-    </div>
-    <div class="control-group">
-        <div class="controls">
-          <input type="text" id="lastname" name="lastname" class="input-xlarge"
+  <form action="" method=post>
+    <h2> Register </h2>
+    <div class="form-group">
+        <input type="text" id="firstname" name="firstname" class="form-control"
+            placeholder="Enter FirstName" value="{{ request.form.firstname }}" required>
+        <br />   
+        <input type="text" id="lastname" name="lastname" class="form-control"
             placeholder="Enter LastName" value="{{ request.form.lastname }}"
             required>
-        </div>
-    </div>
-    <div class="control-group">
-        <div class="controls">
-          <input type="email" id="email" name="email" class="input-xlarge"
+        <br />   
+        <input type="email" id="email" name="email" class="form-control"
             placeholder="Enter Email" value="{{ request.form.email }}"
             required>
-        </div>
-    </div>
-    <div class="control-group">
-        <div class="controls">
-          <input type="password" id="password" name="password" class="input-xlarge"
+        <br />
+        <input type="password" id="password" name="password" class="form-control"
             placeholder="Enter Password" value="{{ request.form.password }}"
             required>
-        </div>
-    </div>
-    <div class="control-group">
-        <div class="controls">
-          <button type="submit" class="btn btn-success">Signup</button>
-        </div>
+        <br />
+        <button type="submit" class="btn btn-primary">Signup</button>
     </div>
   </form>
 {% endblock %}

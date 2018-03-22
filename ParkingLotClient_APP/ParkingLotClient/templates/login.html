@@ -1,23 +1,18 @@
 {% extends "base.html" %}
 {% block content %}
-  <form action="" method=post class="form-horizontal">
-    <h2>Signin</h2>
-    <div class="control-group">
-        <div class="controls">
-          <input type="text" id="email" name="email" class="input-xlarge"
-            placeholder="Enter email" required>
-        </div>
-    </div>
-    <div class="control-group">
-        <div class="controls">
-          <input type="password" id="password" name="password" class="input-xlarge"
-            placeholder="Enter Password" required>
-        </div>
-    </div>
-    <div class="control-group">
-        <div class="controls">
-          <button type="submit" class="btn btn-success">Signin</button>
-        </div>
+  <form action="" method=post>
+	{% if errorMessage %}
+	<div class="alert alert-danger" role="alert">
+		{{errorMessage}}
+	</div>
+	{% endif %}
+    <h2> Sign in </h2>
+    <div class="form-group">
+	  <input type="text" id="email" name="email" class="form-control"
+		placeholder="Enter email" required> <br />
+	  <input type="password" id="password" name="password" class="form-control"
+		placeholder="Enter password" required> <br />
+	  <button type="submit" class="btn btn-primary">Sign in</button>
     </div>
   </form>
 {% endblock %}

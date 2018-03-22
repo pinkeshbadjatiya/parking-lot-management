@@ -3,7 +3,6 @@ from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
 
-
 def init_db(db):
     db.create_all()
 
@@ -12,7 +11,6 @@ def init_db(db):
         db.session.commit()
 
     db.Model.save = save
-
 
 app = Flask(__name__)
 app.config.from_object('server_config')
@@ -25,12 +23,12 @@ login_manager.init_app(app)
 login_manager.login_view = 'authentication.login'
 
 from authentication.models import Users
+from admin.models import ParkingLot
 
 @login_manager.user_loader
 def load_user(user_id):
     print user_id
     return Users.query.filter(Users.id == int(user_id)).first()
-
 
 ####################
 # Blueprints

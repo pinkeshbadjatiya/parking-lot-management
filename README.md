@@ -10,14 +10,18 @@ Set up environment:
 
 Run the app:
     
-    NOTE: You have to be in the home folder of the repository to execute these commands
+    NOTE: You have to be in the home folder (ParkingLotServer_APP for server and ParkingLotClient_APP for client) of the repository to execute these commands
     --> To run the server
         >> export FLASK_APP=ParkingLotServer/__init__.py
+        >> export PYTHONPATH=$(pwd)
         >> flask run
+        >> Access at http://127.0.0.1:5000/auth/login
 
     --> To run the client
         >> export FLASK_APP=ParkingLotClient/__init__.py
+        >> export PYTHONPATH=$(pwd)
         >> flask run
+        >> Access at http://127.0.0.1:5000/auth/login
 
 =============================================================
 

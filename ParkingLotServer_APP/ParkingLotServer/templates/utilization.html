@@ -1,0 +1,142 @@
+{% extends "base.html" %}
+{% block content %}
+<form method=post>
+	<div style="margin-bottom:20px">
+	<nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+		<div class="collapse navbar-collapse" id="navbarSupportedContent">
+			<ul class="navbar-nav mr-auto">
+				<li class="nav-item active">
+					<a class="nav-link" href="{{url_for('admin.show_dashboard')}}">Dashboard</a>
+				</li>
+				<li class="nav-item">
+					<a class="nav-link" href="{{url_for('authentication.logout')}}">Log Out</a>
+				</li>
+			</ul>
+		</div>
+	</nav>
+	</div>
+	<h5>View utilization statistics for: </h5>
+	<div class="input-group" style="margin-bottom:20px">
+		<div class="input-group-prepend">
+			<label class="input-group-text" for="inputPLSelect">Parking Lot</label>
+		</div>
+		<select class="custom-select" name="inputPLSelect" required>
+		{% for item in parkinglotList %}
+			{% if item == spl %}
+				<option selected>{{item}}</option>
+			{% else %}
+				<option>{{item}}</option>
+			{% endif %}
+		{% endfor %}
+		</select>     
+	</div>
+	
+	<div class="input-group" style="margin-bottom:20px">
+		<div class="input-group-prepend">
+			<label class="input-group-text" for="inputDateSelect">Date<span style="display:inline-block; width:48px;"></span></label>
+		</div>
+		<input class="form-control" type="date" name="inputDateSelect" value="{{sdate}}" required/>
+	</div>
+
+	<div class="input-group" style="margin-bottom:20px">
+		<button name="button" class="btn btn-primary btn-block" type="submit" value="view_utilization">View Utilization</button>
+	</div>
+	
+	{% if chartDataPresent %}
+	<div class="clearfix">
+	<div id="box1" style="float:left; margin-bottom:20px"><!-- Plotly chart will be drawn inside this DIV --></div>
+	<script>
+		var trace1 = {
+		  x: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23],
+		  y: {{perHourUtil}},
+		  name: 'Utilization', 
+		  type: 'scatter'
+		};
+
+		var trace2 = {
+		  x: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23],
+		  y: {{perHourRev}},
+		  name: 'Revenue', 
+		  yaxis: 'y2', 
+		  type: 'scatter'
+		};
+
+		var data = [trace1, trace2];
+
+		var layout = {
+		  width: 500,
+		  height: 300,
+		  title: 'Hourly Utilization and Revenue', 
+		  yaxis: {title: 'Utilization',
+			titlefont: {color: 'rgb(31, 120, 180)'}, 
+			tickfont: {color: 'rgb(31, 120, 180)'},
+		  }, 
+		  yaxis2: {
+			title: 'Revenue', 
+			titlefont: {color: 'rgb(255, 126, 11)'}, 
+			tickfont: {color: 'rgb(255, 126, 11)'}, 
+			overlaying: 'y', 
+			side: 'right'
+		  },
+		  showlegend:false
+		};
+
+		Plotly.newPlot('box1', data, layout);
+	</script>
+	
+	<div id="box2" style="float:right; margin-bottom:20px"><!-- Plotly chart will be drawn inside this DIV --></div>
+	<script>
+		var d = new Date();
+		d.setDate({{sdate_day}});
+		d.setMonth({{sdate_month}}-1);
+		d.setFullYear({{sdate_year}});
+		var dm1 = new Date();
+		dm1.setDate(d.getDate() - 1);
+		var dm2 = new Date();
+		dm2.setDate(d.getDate() - 2);
+		var dStr = d.getDate() + '/' + (d.getMonth()+1) + '/' + d.getFullYear();
+		var dm1Str = dm1.getDate() + '/' + (dm1.getMonth()+1) + '/' + dm1.getFullYear();
+		var dm2Str = dm2.getDate() + '/' + (dm2.getMonth()+1) + '/' + dm2.getFullYear();
+		
+		var trace1 = {
+			x: [dm2Str, dm1Str, dStr],
+			y: [{{selDateUtil}}, {{selDateM1Util}}, {{selDateM2Util}}],
+			name: 'Utilization',
+			type: 'bar'
+		};
+
+		var trace2 = {
+			x: [dm2Str, dm1Str, dStr],
+			y: [{{selDateRev}}, {{selDateM1Rev}}, {{selDateM2Rev}}],
+			name: 'Revenue',
+			yaxis: 'y2',
+			type: 'line'
+		};
+
+		var data = [trace1, trace2];
+
+		var layout = {
+			//barmode: 'group',
+			width: 500,
+			height: 300,
+			title: 'Average Utilization and Revenue (Past Days)', 
+			yaxis: {title: 'Utilization',
+			titlefont: {color: 'rgb(31, 120, 180)'}, 
+			tickfont: {color: 'rgb(31, 120, 180)'},
+			}, 
+			yaxis2: {
+			title: 'Revenue',
+			titlefont: {color: 'rgb(255, 126, 11)'},
+			tickfont: {color: 'rgb(255, 126, 11)'}, 
+			overlaying: 'y', 
+			side: 'right'
+			},
+			showlegend:false
+		};
+
+		Plotly.newPlot('box2', data, layout);
+	</script>
+	</div>
+	{% endif %}
+  </form>
+{% endblock %}

@@ -1,4 +1,4 @@
-from ParkingLotClient import db
+from ParkingLotServer import db
 from passlib.hash import argon2
 
 
