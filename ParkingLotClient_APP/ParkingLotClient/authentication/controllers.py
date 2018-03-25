@@ -14,12 +14,12 @@ from flask import url_for, render_template, redirect, flash
 from flask_login import logout_user, login_user, current_user
 mod_auth = Blueprint('authentication', __name__)
 
-@mod_auth.route('/', methods=['GET'])
-@login_required
-def home():
-    print g.user
-    print current_user
-    return "WOW!"
+#@mod_auth.route('/', methods=['GET'])
+#@login_required
+#def home():
+#    print g.user
+#    print current_user
+#    return "WOW!"
 
 @mod_auth.route('/login', methods=['GET','POST'])
 def login():
@@ -33,10 +33,11 @@ def login():
             db.session.commit()
             login_user(user)
             flash('Thanks for logging in, {}'.format(current_user.email))
-    	    return redirect(url_for('authentication.home'))
+    	    return redirect(url_for('client.show_home'))
         else:
             flash('ERROR! Incorrect login credentials.', 'error')
-    return render_template('login.html')
+    #return render_template('login.html')
+    return redirect(url_for('client.show_home'))
 
 
 

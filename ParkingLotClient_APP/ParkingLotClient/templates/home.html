@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block content %}
+  <form>
+	<div>
+	<a class="btn btn-primary btn-block" href="{{url_for('client.exit_processing')}}">Exit</a>
+	<a class="btn btn-primary btn-block" href="{{url_for('authentication.logout')}}">Logout</a>
+	</div>
+  </form>
+{% endblock %}
