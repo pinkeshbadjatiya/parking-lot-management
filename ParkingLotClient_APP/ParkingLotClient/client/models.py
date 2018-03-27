@@ -77,18 +77,18 @@ class Token(db.Model):
     pay_method = db.Column(db.String(200), nullable=True)
 
     #unsure about the data type below
-    entry_time = db.Column(db.String(100), nullable=False)
-    exit_time = db.Column(db.String(100),nullable=True)
+    entry_date = db.Column(db.DateTime, nullable=False)
+    exit_date = db.Column(db.DateTime,nullable=True)
     #--------------
 
-    def __init__(self, token_id, charge_id, vehicle_no, computed_charge, pay_method, entry_time, exit_time):
+    def __init__(self, token_id, charge_id, vehicle_no, computed_charge, pay_method, entry_date, exit_date):
         self.token_id = token_id
         self.charge_id = charge_id
         self.vehicle_no = vehicle_no
         self.computed_charge = computed_charge
         self.pay_method = pay_method
-        self.entry_time = entry_time
-        self.exit_time = exit_time
+        self.entry_date = entry_date
+        self.exit_date = exit_date
 
 class Charge(db.Model):
     __tablename__ = "charge"
@@ -99,7 +99,7 @@ class Charge(db.Model):
     price_snapshot = db.Column(db.String(2500), nullable=False)
     
     ch_active = db.Column(db.Boolean, default=False, nullable=False)
-    update_date = db.Column(db.String(100), nullable=False)
+    update_date = db.Column(db.DateTime, nullable=False)
     def __init__(self, charge_id, pl_id, price_snapshot, ch_active, update_date):
         self.charge_id = charge_id
         self.pl_id = pl_id

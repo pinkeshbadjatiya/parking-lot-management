@@ -21,7 +21,6 @@ mod_client = Blueprint('client', __name__)
 
 
 @mod_client.route('/home', methods=['GET', 'POST'])
-
 def show_home():
 
     return render_template('home.html', headerTitle='Parking Lot - Home')
@@ -102,23 +101,24 @@ def exit_processing():
         
         token_input = request.form["token_id"]
         pay_method = request.form["pay_method"]
+
         #Extract Token corresponding to queried token_id
         token_object = Token.query.filter_by(token_id = token_input).first()
 
-        s = token_object.entry_time
         exit_dtime = dt.now()
-        entry_dtime = dt.strptime(s, '%Y-%m-%d %H:%M:%S')
+        entry_dtime = token_object.entry_date
         #exit_dtime = dt.strptime('2017-03-5 19:10:00', '%Y-%m-%d %H:%M:%S')
         
         #Extract Charge corresponding to the Particular token
         charge_object = Charge.query.filter_by(charge_id = token_object.charge_id).first()
         price_snapshot = charge_object.price_snapshot
-        
+
+        #Find the amount Customer needs to pay
         final_price = calc_price(entry_dtime, exit_dtime, price_snapshot)
         
         token_object.computed_charge = final_price
         token_object.pay_method = pay_method
-        token_object.exit_time = exit_dtime.strftime('%Y-%m-%d %H:%M')
+        token_object.exit_date = exit_dtime
         db.session.commit()
 
         session['pay_method'] = pay_method
