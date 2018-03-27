@@ -1,5 +1,15 @@
 {% extends "base.html" %}
 {% block content %}
 
-<h1>Over it</h1>
+
+<form action ="{{ url_for('client.exit_processing') }}" method = "post">
+  Input Token Id:<br/>
+  <input type="text" name="token_id">
+  <br/>
+  Input Payment Method:<br/>
+  <input type="text" name="pay_method">
+  <br/>
+  <input type="submit">
+</form>
+
 {% endblock %}
