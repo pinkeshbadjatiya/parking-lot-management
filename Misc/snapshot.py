@@ -26,6 +26,7 @@ def make_snap():
         part = []
         for j in range(0, 24):
             part.append(rand.uniform(100,500))
+            #part.append(1)
 
         snap.append(part)
 
