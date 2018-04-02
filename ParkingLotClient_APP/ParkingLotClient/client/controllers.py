@@ -1,7 +1,8 @@
+from __future__ import print_function
 from flask import g, Blueprint, request, jsonify
 from flask_mail import Message
 from ParkingLotClient import db
-
+import sys
 import arrow
 import jwt
 from passlib.hash import argon2
@@ -12,6 +13,7 @@ from ParkingLotClient import app
 from flask_login import login_required
 from flask import Flask, render_template, redirect, url_for, session
 
+
 from .models import Token, Charge
 #from .models import User
 
@@ -19,6 +21,8 @@ from flask import url_for
 
 mod_client = Blueprint('client', __name__)
 
+#app = Flask(__name__)
+#app.debug = True
 
 @mod_client.route('/home', methods=['GET', 'POST'])
 def show_home():
@@ -33,12 +37,12 @@ def payment_process():
 
         pay_method = session['pay_method']
         session['pay_method'] = ""
-        
+
         final_price = session['final_price']
         session['final_price'] = ""
 
         session['allow'] = False
-        
+
         return render_template('payment.html', headerTitle='Parking Lot - Receipt for Customer', pay_method = pay_method, final_price = final_price)
 
 
@@ -51,14 +55,14 @@ def calc_for_date(start_dtime, end_dtime, snap):
 
     for i in range(entry_hour, exit_hour + 1):
         temp_sum += float(snap[weekday][i])
-    
+
     return temp_sum
 
 
 def calc_price(entry_dtime, exit_dtime, price_snapshot):
 
     #Converting the string snapshot into suitable list of lists structure
-    
+
     ls = price_snapshot.split('#')
     price_snapshot = []
     for i in ls:
@@ -66,7 +70,7 @@ def calc_price(entry_dtime, exit_dtime, price_snapshot):
 
     ls = []
     summ = 0
-    
+
     days = (exit_dtime.date() - entry_dtime.date()).days
     fin_time = dt.strptime("23:59:00", '%H:%M:%S')
     start_time = dt.strptime("00:01:00", '%H:%M:%S')
@@ -79,9 +83,9 @@ def calc_price(entry_dtime, exit_dtime, price_snapshot):
 
     #If car entered and exited on different dates
     else:
-        
+
         for i in range(days+1):
-            
+
             if i == 0:
                 summ += calc_for_date(entry_dtime, dt.combine(entry_dtime.date(),fin_time), price_snapshot)
             if i > 0 and i < days:
@@ -98,7 +102,7 @@ def calc_price(entry_dtime, exit_dtime, price_snapshot):
 def exit_processing():
 
     if request.method == 'POST':
-        
+
         token_input = request.form["token_id"]
         pay_method = request.form["pay_method"]
 
@@ -108,14 +112,14 @@ def exit_processing():
         exit_dtime = dt.now()
         entry_dtime = token_object.entry_date
         #exit_dtime = dt.strptime('2017-03-5 19:10:00', '%Y-%m-%d %H:%M:%S')
-        
+
         #Extract Charge corresponding to the Particular token
         charge_object = Charge.query.filter_by(charge_id = token_object.charge_id).first()
         price_snapshot = charge_object.price_snapshot
 
         #Find the amount Customer needs to pay
         final_price = calc_price(entry_dtime, exit_dtime, price_snapshot)
-        
+
         token_object.computed_charge = final_price
         token_object.pay_method = pay_method
         token_object.exit_date = exit_dtime
@@ -129,3 +133,49 @@ def exit_processing():
 
     else:
         return render_template('exit.html', headerTitle='Parking Lot - Exit')
+
+@mod_client.route('/tokenDisplay', methods=['GET', 'POST'])
+def token_display():
+    if(session['allow']):
+        new_token_id = session['new_token_id']
+        session['new_token_id'] = ""
+
+        customer_entry_time = session['customer_entry_time']
+        session['customer_entry_time'] = ""
+        # print(customer_entry_time, file=sys.stderr)
+        session['allow'] = False
+        return render_template('tokenDisplay.html', headerTitle='Parking Lot - Token for Customer' , new_token_id = new_token_id, customer_entry_time = customer_entry_time)
+    else:
+        return 'Token Generated'
+
+
+@mod_client.route('/entry', methods=['GET', 'POST'])
+def entry_processing():
+    if request.method == 'POST':
+        #get the current time to push along with customer car no
+        entry_dtime = dt.now()
+        #operator entered car Number
+        carNo = request.form["CarNumber"]
+
+        #Find active charge Id
+        #Currently no active charge Id
+        activeCharge = Charge.query.filter(Charge.ch_active.is_(True)).first()
+        if (activeCharge is not None):
+            chid = activeCharge.charge_id
+        else:
+            notActiveCharge = Charge.query.filter(Charge.ch_active.is_(False)).first()
+            if (notActiveCharge is not None):
+                chid = notActiveCharge.charge_id
+
+        #create and push new token and generate token id
+        getToken = Token(charge_id = chid, vehicle_no = carNo, entry_date = entry_dtime )
+        db.session.add(getToken)
+        db.session.commit()
+        #print(new_token.token_id, file=sys.stderr)
+
+        session['new_token_id'] = getToken.token_id
+        session['customer_entry_time'] = entry_dtime
+        session['allow'] = True
+        return redirect(url_for('client.token_display'))
+    else:
+        return render_template('entry.html', headerTitle='Parking Lot - Entry for Customer')

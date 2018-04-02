@@ -2,6 +2,7 @@
 {% block content %}
   <form>
 	<div>
+  <a class="btn btn-primary btn-block" href="{{url_for('client.entry_processing')}}">Entry</a>
 	<a class="btn btn-primary btn-block" href="{{url_for('client.exit_processing')}}">Exit</a>
 	<a class="btn btn-primary btn-block" href="{{url_for('authentication.logout')}}">Logout</a>
 	</div>

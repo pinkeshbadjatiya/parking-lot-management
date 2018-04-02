@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block content %}
+
+
+<form action ="{{ url_for('client.entry_processing') }}" method = "post">
+
+  Car Number:<br/>
+  <input type="text" name="CarNumber">
+  <br/>
+
+  <input type="submit">
+
+</form>
+
+{% endblock %}
