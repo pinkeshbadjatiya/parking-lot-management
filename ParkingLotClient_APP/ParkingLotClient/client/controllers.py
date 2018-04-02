@@ -30,6 +30,50 @@ def show_home():
     return render_template('home.html', headerTitle='Parking Lot - Home')
 
 
+#@mod_client.route('/display', methods=['GET', 'POST'])
+def display_info(ls):
+
+    #ls[0] == 1(for entry), 2(for exit), 3(for synch)
+    if ls[0] == 1 or ls[0] == 2:
+        empty_slots = ls[1]
+
+    if ls[0] == 3:
+
+        snap = ls[1]
+        now = dt.now()
+
+        now_day = now.weekday()
+        now_day = (now_day + 1)%7
+        now_hour = now.hour
+
+        summ = 0
+        four_hour_avg = 0
+        one_day_avg = 0
+        two_day_avg = 0
+
+        for i in range(now_hour, now_hour + 4):
+            four_hour_avg += snap[now_day][i]
+        four_hour_avg = float(four_hour_avg)/4
+
+        #calculate average for one day
+        for i in range(0, 24):
+            summ += snap[now_day][i]
+        one_day_avg = float(summ)/24
+
+        #calculate average for more than one day
+        j = 1
+        
+        while j != 2:
+            now_day = (now_day + 1)%7
+            for i in range(0, 24):
+                summ += snap[now_day][i]
+
+            j = j + 1
+
+        two_day_avg = float(summ)/24*2
+                
+            
+
 @mod_client.route('/payment', methods=['GET', 'POST'])
 def payment_process():
 
