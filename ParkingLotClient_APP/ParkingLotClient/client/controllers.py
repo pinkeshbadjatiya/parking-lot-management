@@ -136,14 +136,14 @@ def exit_processing():
 
 @mod_client.route('/tokenDisplay', methods=['GET', 'POST'])
 def token_display():
-    if(session['allow']):
+    if(session['token_session']):
         new_token_id = session['new_token_id']
         session['new_token_id'] = ""
 
         customer_entry_time = session['customer_entry_time']
         session['customer_entry_time'] = ""
         # print(customer_entry_time, file=sys.stderr)
-        session['allow'] = False
+        session['token_session'] = False
         return render_template('tokenDisplay.html', headerTitle='Parking Lot - Token for Customer' , new_token_id = new_token_id, customer_entry_time = customer_entry_time)
     else:
         return 'Token Generated'
@@ -175,7 +175,7 @@ def entry_processing():
 
         session['new_token_id'] = getToken.token_id
         session['customer_entry_time'] = entry_dtime
-        session['allow'] = True
+        session['token_session'] = True
         return redirect(url_for('client.token_display'))
     else:
         return render_template('entry.html', headerTitle='Parking Lot - Entry for Customer')
