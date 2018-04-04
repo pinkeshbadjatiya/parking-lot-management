@@ -28,3 +28,19 @@ class User(db.Model):
         self.password = argon2.hash(new_password)
         self.save()
         return True
+
+class HourlyUtil(db.Model):
+
+    __tablename__ = "hourly_util"
+
+    id = db.Column(db.Integer, primary_key=True)
+    util_date = db.Column(db.Date, unique=True, nullable=False)
+    util_hour = db.Column(db.Integer, nullable=False)
+    util = db.Column(db.Float, nullable=False)
+    rev = db.Column(db.Float, nullable=False)
+
+    def __init__(self, util_date, util_hour, util, rev):
+        self.util_date = util_date
+        self.util_hour = util_hour
+        self.util = util
+        self.rev = rev
