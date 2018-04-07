@@ -76,11 +76,10 @@ class Charge(db.Model):
     price_snapshot = db.Column(db.String(2500), nullable=False)
 
     ch_active = db.Column(db.Boolean, default=False, nullable=False)
-    update_date = db.Column(db.DateTime, nullable=False)
+    update_date = db.Column(db.DateTime, default=db.func.current_timestamp())
 
-    def __init__(self, charge_id, pl_id, price_snapshot, ch_active, update_date):
+    def __init__(self, charge_id, pl_id, price_snapshot, ch_active):
         self.charge_id = charge_id
         self.pl_id = pl_id
         self.price_snapshot = price_snapshot
         self.ch_active = ch_active
-        self.update_date = update_date

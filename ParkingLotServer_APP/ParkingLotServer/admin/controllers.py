@@ -11,7 +11,7 @@ from sqlalchemy import and_
 from ParkingLotServer import app, db
 from flask_login import login_required
 from flask import Flask, render_template, redirect, flash
-from .models import ParkingLot, Utilization
+from .models import ParkingLot, Utilization, Charge
 
 from flask import url_for
 
@@ -21,7 +21,49 @@ mod_admin = Blueprint('admin', __name__)
 @mod_admin.route('/viewUpdatePrices', methods=['GET', 'POST'])
 @login_required
 def view_update_prices():
-    print 'View Update Prices'
+    # Getting Parking Lot List from the DB through model and sending it to utilization page
+    plList = []
+    plListMap = {}
+    plListRaw = ParkingLot.query.filter_by(pl_active='t').all()
+    for plListRawItem in plListRaw:
+        plList.append(plListRawItem.pl_name)
+        plListMap[plListRawItem.pl_name] = plListRawItem.id
+
+    headerTitle = 'Parking Lot - Price Snapshot'
+    if request.method == 'POST':
+        if request.form['button'] == 'view_pricesnapshot':
+            selected_pl = request.form['inputPLSelect']
+
+            # Check if parking lot is present
+            if selected_pl not in plListMap:
+                return render_template('viewprices.html',
+                                        headerTitle=headerTitle,
+                                        parkinglotList=plList,
+                                        priceDataPresent=False,
+                                        message="Invalid parking lot selected")
+
+            parklot_id = plListMap[selected_pl]
+            charge_obj = Charge.query.filter_by(pl_id=parklot_id, ch_active='t').first()
+            if not charge_obj:
+                return render_template('viewprices.html',
+                                        headerTitle=headerTitle,
+                                        parkinglotList=plList,
+                                        priceDataPresent=False,
+                                        message="No charge data available")
+
+            # Convert to lists
+            price_snapshot = charge_obj.price_snapshot.split("#")
+            for i, day in enumerate(price_snapshot):
+                price_snapshot[i] = price_snapshot[i].split(",")
+
+            return render_template('viewprices.html',
+                                    headerTitle=headerTitle,
+                                    parkinglotList=plList,
+                                    priceDataPresent='true',
+                                    parkinglotname=selected_pl,
+                                    pricesnapshot=price_snapshot)
+
+    return render_template('viewprices.html', headerTitle=headerTitle, parkinglotList=plList, priceDataPresent=True)
 
 
 def get_parking_lots():

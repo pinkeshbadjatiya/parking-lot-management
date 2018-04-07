@@ -107,7 +107,6 @@ def calc_for_date(start_dtime, end_dtime, snap):
 def calc_price(entry_dtime, exit_dtime, price_snapshot):
 
     # Converting the string snapshot into suitable list of lists structure
-
     ls = price_snapshot.split('#')
     price_snapshot = []
     for i in ls:
@@ -151,18 +150,18 @@ def exit_processing():
         token_input = request.form["token_id"]
         pay_method = request.form["pay_method"]
 
-        #Extract Token corresponding to queried token_id
-        token_object = Token.query.filter_by(token_id = token_input).first()
+        # Extract Token corresponding to queried token_id
+        token_object = Token.query.filter_by(token_id=token_input).first()
 
         exit_dtime = dt.now()
         entry_dtime = token_object.entry_date
-        #exit_dtime = dt.strptime('2017-03-5 19:10:00', '%Y-%m-%d %H:%M:%S')
+        # exit_dtime = dt.strptime('2017-03-5 19:10:00', '%Y-%m-%d %H:%M:%S')
 
-        #Extract Charge corresponding to the Particular token
-        charge_object = Charge.query.filter_by(charge_id = token_object.charge_id).first()
+        # Extract Charge corresponding to the Particular token
+        charge_object = Charge.query.filter_by(charge_id=token_object.charge_id).first()
         price_snapshot = charge_object.price_snapshot
 
-        #Find the amount Customer needs to pay
+        # Find the amount Customer needs to pay
         final_price = calc_price(entry_dtime, exit_dtime, price_snapshot)
 
         token_object.computed_charge = final_price
