@@ -85,9 +85,15 @@ def payment_process():
         final_price = session['final_price']
         session['final_price'] = ""
 
+        token_id = session['token_id']
+        session['token_id'] = ""
+
+        exit_time = session['exit_time']
+        session['exit_time'] = ""
+        
         session['allow'] = False
 
-        return render_template('payment.html', headerTitle='Parking Lot - Receipt for Customer', pay_method = pay_method, final_price = final_price)
+        return render_template('payment.html', headerTitle='Parking Lot - Receipt for Customer', pay_method = pay_method, final_price = final_price, token_id = token_id, exit_time = exit_time)
 
 
 def calc_for_date(start_dtime, end_dtime, snap):
@@ -151,32 +157,44 @@ def exit_processing():
         pay_method = request.form["pay_method"]
 
         #Extract Token corresponding to queried token_id
+        token_object_exists = Token.query.filter_by(token_id = token_input).count()
         token_object = Token.query.filter_by(token_id = token_input).first()
+        if token_object_exists > 0:
+            if token_object.exit_date == None:
+                
 
-        exit_dtime = dt.now()
-        entry_dtime = token_object.entry_date
-        #exit_dtime = dt.strptime('2017-03-5 19:10:00', '%Y-%m-%d %H:%M:%S')
-
-        #Extract Charge corresponding to the Particular token
-        charge_object = Charge.query.filter_by(charge_id = token_object.charge_id).first()
-        price_snapshot = charge_object.price_snapshot
-
-        #Find the amount Customer needs to pay
-        final_price = calc_price(entry_dtime, exit_dtime, price_snapshot)
-
-        token_object.computed_charge = final_price
-        token_object.pay_method = pay_method
-        token_object.exit_date = exit_dtime
-        db.session.commit()
-
-        session['pay_method'] = pay_method
-        session['final_price'] = final_price
-        session['allow'] = True
-
-        return redirect(url_for('client.payment_process'))
-
+                exit_dtime = dt.now()
+                entry_dtime = token_object.entry_date
+                exit_dtime = dt.strptime(exit_dtime.strftime('%Y-%m-%d %H:%M'), '%Y-%m-%d %H:%M')
+                
+                #Extract Charge corresponding to the Particular token
+                charge_object = Charge.query.filter_by(charge_id = token_object.charge_id).first()
+                price_snapshot = charge_object.price_snapshot
+                
+                #Find the amount Customer needs to pay
+                final_price = calc_price(entry_dtime, exit_dtime, price_snapshot)
+                final_price = float("{0:.2f}".format(final_price))
+                
+                token_object.computed_charge = final_price
+                token_object.pay_method = pay_method
+                token_object.exit_date = exit_dtime
+                db.session.commit()
+                
+                session['pay_method'] = pay_method
+                session['final_price'] = final_price
+                session['token_id'] = token_input
+                session['exit_time'] = exit_dtime.strftime('%Y-%m-%d %H:%M')
+                session['allow'] = True
+                
+                return redirect(url_for('client.payment_process'))
+            
+            else:
+                return render_template('exit.html', headerTitle='Parking Lot - Exit', msg = "Token already used", is_error = "true")
+        else:
+            return render_template('exit.html', headerTitle='Parking Lot - Exit', msg = "Invalid Token", is_error = "true")
+            
     else:
-        return render_template('exit.html', headerTitle='Parking Lot - Exit')
+        return render_template('exit.html', headerTitle='Parking Lot - Exit', msg = "", is_error = "")
 
 @mod_client.route('/tokenDisplay', methods=['GET', 'POST'])
 def token_display():
