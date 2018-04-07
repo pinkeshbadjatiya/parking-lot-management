@@ -15,14 +15,15 @@ from flask import Flask, render_template, redirect, url_for, session
 
 
 from .models import Token, Charge
-#from .models import User
+# from .models import User
 
 from flask import url_for
 
 mod_client = Blueprint('client', __name__)
 
-#app = Flask(__name__)
-#app.debug = True
+# app = Flask(__name__)
+# app.debug = True
+
 
 @mod_client.route('/home', methods=['GET', 'POST'])
 def show_home():
@@ -30,10 +31,10 @@ def show_home():
     return render_template('home.html', headerTitle='Parking Lot - Home')
 
 
-#@mod_client.route('/display', methods=['GET', 'POST'])
+# @mod_client.route('/display', methods=['GET', 'POST'])
 def display_info(ls):
 
-    #ls[0] == 1(for entry), 2(for exit), 3(for synch)
+    # ls[0] == 1(for entry), 2(for exit), 3(for synch)
     if ls[0] == 1 or ls[0] == 2:
         empty_slots = ls[1]
 
@@ -43,7 +44,7 @@ def display_info(ls):
         now = dt.now()
 
         now_day = now.weekday()
-        now_day = (now_day + 1)%7
+        now_day = (now_day + 1) % 7
         now_hour = now.hour
 
         summ = 0
@@ -53,26 +54,25 @@ def display_info(ls):
 
         for i in range(now_hour, now_hour + 4):
             four_hour_avg += snap[now_day][i]
-        four_hour_avg = float(four_hour_avg)/4
+        four_hour_avg = float(four_hour_avg) / 4
 
         #calculate average for one day
         for i in range(0, 24):
             summ += snap[now_day][i]
-        one_day_avg = float(summ)/24
+        one_day_avg = float(summ) / 24
 
-        #calculate average for more than one day
+        # calculate average for more than one day
         j = 1
-        
+
         while j != 2:
-            now_day = (now_day + 1)%7
+            now_day = (now_day + 1) % 7
             for i in range(0, 24):
                 summ += snap[now_day][i]
 
             j = j + 1
 
-        two_day_avg = float(summ)/24*2
-                
-            
+        two_day_avg = float(summ) / (24*2)       # <<< ===  CHECK THE BRACKETS IN DENOMINATOR - Pinkesh
+
 
 @mod_client.route('/payment', methods=['GET', 'POST'])
 def payment_process():
@@ -87,13 +87,14 @@ def payment_process():
 
         session['allow'] = False
 
-        return render_template('payment.html', headerTitle='Parking Lot - Receipt for Customer', pay_method = pay_method, final_price = final_price)
+        return render_template('payment.html', headerTitle='Parking Lot - Receipt for Customer', pay_method=pay_method,
+                                final_price=final_price)
 
 
 def calc_for_date(start_dtime, end_dtime, snap):
     temp_sum = 0
     weekday = start_dtime.weekday()
-    weekday = (weekday + 1)%7
+    weekday = (weekday + 1) % 7
     entry_hour = start_dtime.hour
     exit_hour = end_dtime.hour
 
@@ -105,7 +106,7 @@ def calc_for_date(start_dtime, end_dtime, snap):
 
 def calc_price(entry_dtime, exit_dtime, price_snapshot):
 
-    #Converting the string snapshot into suitable list of lists structure
+    # Converting the string snapshot into suitable list of lists structure
 
     ls = price_snapshot.split('#')
     price_snapshot = []
@@ -121,19 +122,19 @@ def calc_price(entry_dtime, exit_dtime, price_snapshot):
     fin_time = fin_time.time()
     start_time = start_time.time()
 
-    #If car entered and exited on the same Date
+    # If car entered and exited on the same Date
     if(days == 0):
         summ = calc_for_date(entry_dtime, exit_dtime, price_snapshot)
 
-    #If car entered and exited on different dates
+    # If car entered and exited on different dates
     else:
 
         for i in range(days+1):
 
             if i == 0:
-                summ += calc_for_date(entry_dtime, dt.combine(entry_dtime.date(),fin_time), price_snapshot)
+                summ += calc_for_date(entry_dtime, dt.combine(entry_dtime.date(), fin_time), price_snapshot)
             if i > 0 and i < days:
-                temp_date = entry_dtime.date()+datetime.timedelta(days = i)
+                temp_date = entry_dtime.date()+datetime.timedelta(days=i)
                 summ += calc_for_date(dt.combine(temp_date, start_time), dt.combine(temp_date, fin_time), price_snapshot)
 
             if i == days:
@@ -141,8 +142,8 @@ def calc_price(entry_dtime, exit_dtime, price_snapshot):
 
     return summ
 
-@mod_client.route('/exit', methods=['GET', 'POST'])
 
+@mod_client.route('/exit', methods=['GET', 'POST'])
 def exit_processing():
 
     if request.method == 'POST':
