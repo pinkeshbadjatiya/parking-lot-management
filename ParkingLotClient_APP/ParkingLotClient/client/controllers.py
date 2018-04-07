@@ -56,7 +56,7 @@ def display_info(ls):
             four_hour_avg += snap[now_day][i]
         four_hour_avg = float(four_hour_avg) / 4
 
-        #calculate average for one day
+        # calculate average for one day
         for i in range(0, 24):
             summ += snap[now_day][i]
         one_day_avg = float(summ) / 24
@@ -71,7 +71,7 @@ def display_info(ls):
 
             j = j + 1
 
-        two_day_avg = float(summ) / (24*2)       # <<< ===  CHECK THE BRACKETS IN DENOMINATOR - Pinkesh
+        two_day_avg = float(summ) / (24 * 2)       # <<< ===  CHECK THE BRACKETS IN DENOMINATOR - Pinkesh
 
 
 @mod_client.route('/payment', methods=['GET', 'POST'])
@@ -85,10 +85,15 @@ def payment_process():
         final_price = session['final_price']
         session['final_price'] = ""
 
+        token_id = session['token_id']
+        session['token_id'] = ""
+
+        exit_time = session['exit_time']
+        session['exit_time'] = ""
+
         session['allow'] = False
 
-        return render_template('payment.html', headerTitle='Parking Lot - Receipt for Customer', pay_method=pay_method,
-                                final_price=final_price)
+        return render_template('payment.html', headerTitle='Parking Lot - Receipt for Customer', pay_method=pay_method, final_price=final_price, token_id=token_id, exit_time=exit_time)
 
 
 def calc_for_date(start_dtime, end_dtime, snap):
@@ -128,7 +133,7 @@ def calc_price(entry_dtime, exit_dtime, price_snapshot):
     # If car entered and exited on different dates
     else:
 
-        for i in range(days+1):
+        for i in range(days + 1):
 
             if i == 0:
                 summ += calc_for_date(entry_dtime, dt.combine(entry_dtime.date(), fin_time), price_snapshot)
@@ -151,32 +156,44 @@ def exit_processing():
         pay_method = request.form["pay_method"]
 
         # Extract Token corresponding to queried token_id
+        token_object_exists = Token.query.filter_by(token_id=token_input).count()
         token_object = Token.query.filter_by(token_id=token_input).first()
+        if token_object_exists > 0:
+            if token_object.exit_date is None:
 
-        exit_dtime = dt.now()
-        entry_dtime = token_object.entry_date
-        # exit_dtime = dt.strptime('2017-03-5 19:10:00', '%Y-%m-%d %H:%M:%S')
+                exit_dtime = dt.now()
+                entry_dtime = token_object.entry_date
+                exit_dtime = dt.strptime(exit_dtime.strftime('%Y-%m-%d %H:%M'), '%Y-%m-%d %H:%M')
 
-        # Extract Charge corresponding to the Particular token
-        charge_object = Charge.query.filter_by(charge_id=token_object.charge_id).first()
-        price_snapshot = charge_object.price_snapshot
+                # Extract Charge corresponding to the Particular token
+                charge_object = Charge.query.filter_by(charge_id=token_object.charge_id).first()
+                price_snapshot = charge_object.price_snapshot
 
-        # Find the amount Customer needs to pay
-        final_price = calc_price(entry_dtime, exit_dtime, price_snapshot)
+                # Find the amount Customer needs to pay
+                final_price = calc_price(entry_dtime, exit_dtime, price_snapshot)
+                final_price = float("{0:.2f}".format(final_price))
 
-        token_object.computed_charge = final_price
-        token_object.pay_method = pay_method
-        token_object.exit_date = exit_dtime
-        db.session.commit()
+                token_object.computed_charge = final_price
+                token_object.pay_method = pay_method
+                token_object.exit_date = exit_dtime
+                db.session.commit()
 
-        session['pay_method'] = pay_method
-        session['final_price'] = final_price
-        session['allow'] = True
+                session['pay_method'] = pay_method
+                session['final_price'] = final_price
+                session['token_id'] = token_input
+                session['exit_time'] = exit_dtime.strftime('%Y-%m-%d %H:%M')
+                session['allow'] = True
 
-        return redirect(url_for('client.payment_process'))
+                return redirect(url_for('client.payment_process'))
+
+            else:
+                return render_template('exit.html', headerTitle='Parking Lot - Exit', msg="Token already used", is_error="true")
+        else:
+            return render_template('exit.html', headerTitle='Parking Lot - Exit', msg="Invalid Token", is_error="true")
 
     else:
-        return render_template('exit.html', headerTitle='Parking Lot - Exit')
+        return render_template('exit.html', headerTitle='Parking Lot - Exit', msg="", is_error="")
+
 
 @mod_client.route('/tokenDisplay', methods=['GET', 'POST'])
 def token_display():
@@ -188,7 +205,7 @@ def token_display():
         session['customer_entry_time'] = ""
         # print(customer_entry_time, file=sys.stderr)
         session['token_session'] = False
-        return render_template('tokenDisplay.html', headerTitle='Parking Lot - Token for Customer' , new_token_id = new_token_id, customer_entry_time = customer_entry_time)
+        return render_template('tokenDisplay.html', headerTitle='Parking Lot - Token for Customer', new_token_id=new_token_id, customer_entry_time=customer_entry_time)
     else:
         return 'Token Generated'
 
@@ -196,13 +213,13 @@ def token_display():
 @mod_client.route('/entry', methods=['GET', 'POST'])
 def entry_processing():
     if request.method == 'POST':
-        #get the current time to push along with customer car no
+        # get the current time to push along with customer car no
         entry_dtime = dt.now()
-        #operator entered car Number
+        # operator entered car Number
         carNo = request.form["CarNumber"]
 
-        #Find active charge Id
-        #Currently no active charge Id
+        # Find active charge Id
+        # Currently no active charge Id
         activeCharge = Charge.query.filter(Charge.ch_active.is_(True)).first()
         if (activeCharge is not None):
             chid = activeCharge.charge_id
@@ -211,11 +228,11 @@ def entry_processing():
             if (notActiveCharge is not None):
                 chid = notActiveCharge.charge_id
 
-        #create and push new token and generate token id
-        getToken = Token(charge_id = chid, vehicle_no = carNo, entry_date = entry_dtime )
+        # create and push new token and generate token id
+        getToken = Token(charge_id=chid, vehicle_no=carNo, entry_date=entry_dtime)
         db.session.add(getToken)
         db.session.commit()
-        #print(new_token.token_id, file=sys.stderr)
+        # print(new_token.token_id, file=sys.stderr)
 
         session['new_token_id'] = getToken.token_id
         session['customer_entry_time'] = entry_dtime
