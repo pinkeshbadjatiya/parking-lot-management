@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+{% block content %}
+	<div style="margin-bottom:20px">
+	<nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+		<div class="collapse navbar-collapse" id="navbarSupportedContent">
+			<ul class="navbar-nav mr-auto">
+				<li class="nav-item active">
+					<a class="nav-link" href="{{url_for('admin.show_dashboard')}}">Dashboard</a>
+				</li>
+				<li class="nav-item">
+					<a class="nav-link" href="{{url_for('authentication.logout')}}">Log Out</a>
+				</li>
+			</ul>
+		</div>
+	</nav>
+	</div>  
+	<div class="container">
+	  <div id="table" class="table-editable">
+	    <table id="parkinglots" class="table">
+	      <tr>
+		<th>Name</th>
+		<th>Address</th>
+		<th>Capacity</th>
+		<th>Price</th>
+	      </tr>
+		{% for item in parkinglotList %}
+		
+	   	<tr>
+		<!--<td contenteditable="false">{{item[0]}}</td>
+		<td contenteditable="true">{{item[1]}}</td>
+		<td contenteditable="true">{{item[2]}}</td>
+		<td contenteditable="true">{{item[3]}}</td>-->
+		
+
+		<form method=post>
+		<td>{{item[0]}}</td>
+		<td>{{item[1]}}</td>
+		<td>{{item[2]}}</td>
+		<td>{{item[3]}}</td>
+		<input type="hidden" name="id" value="{{item[4]}}"></input>
+
+		<td>
+		  <button name="button" class="btn btn-primary btn-block" type="submit" value="delete_pl">Delete</button>
+		</td>
+		</form>		      	
+		</tr>
+		{% endfor %}
+		
+	    </table>
+	  </div>
+	  
+	  <button id="add" class="btn btn-primary">Add</button>
+	</div>
+	
+
+	<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.1/jquery.min.js"></script>
+	<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+	<script src="http://cdnjs.cloudflare.com/ajax/libs/jquery-form-validator/2.3.26/jquery.form-validator.min.js"></script>
+	<script type="text/javascript">
+	$(document).ready(function() {
+	    $('#add').click(function() {
+	       $('#table').append('<form method=post name="add_form"><table class="table"> <tr><td><input name="pl_name" placeholder="Name" type="text" data-validation="required"></input> </td><td><input name="pl_address" placeholder="Address" type="text" data-validation="required"></input></td><td><input name="pl_capacity" placeholder="Capacity" type="text" data-validation="number"></input></td>	<td><input name="pl_price" placeholder="Price" type="text" data-validation="number" data-validation-allowing="range[1;100]"></input></td><td><button name="button" class="btn btn-primary btn-block" type="submit" value="add_pl">Add</button></td></tr></table></form>');
+	    });
+	});
+	</script>
+	<script>
+	
+	$.validate({
+  		form : '#add_form'
+	});
+	</script>
+	<script src="https://code.jquery.com/jquery-1.10.2.js"></script>
+	  <script src='http://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.3/jquery.min.js'></script>
+	<script src='http://ajax.googleapis.com/ajax/libs/jqueryui/1.11.2/jquery-ui.min.js'></script>
+	<script src='https://netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js'></script>
+	<script src='http://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.6.0/underscore.js'></script>
+
+	  
+
+	<!--<script src="js/index.js"></script>-->
+	
+
+{% endblock %}

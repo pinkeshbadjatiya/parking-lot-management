@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+    <head>
+
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+
+        <link rel="stylesheet" href="style.css">
+    </head>
+    <body>
+
+        <div class="wrapper">
+            <!-- Sidebar Holder -->
+
+            <!- Page Content Holder -->
+            <div id="content">
+
+                <h2>Customer Token</h2>
+                <div class="line"></div>
+
+                <h2>Token ID</h2>
+                  <button type="button" class="btn btn-info" data-toggle="collapse" data-target="#token_id">My Token</button>
+                  <div id="token_id" class="collapse">
+                    <code>{{new_token_id}}</code>
+                  </div>
+
+                <div class="line"></div>
+
+                <h2>Entry Time</h2>
+                    <button type="button" class="btn btn-info" data-toggle="collapse" data-target="#entry_time">Entry Time</button>
+                    <div id="entry_time" class="collapse">
+                        <code>{{customer_entry_time}}</code>
+                    </div>
+
+
+
+
+
+            </div>
+        </div>
+
+        <!-- jQuery CDN -->
+         <script src="https://code.jquery.com/jquery-1.12.0.min.js"></script>
+         <!-- Bootstrap Js CDN -->
+         <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+
+         <script type="text/javascript">
+             $(document).ready(function () {
+                 $('#sidebarCollapse').on('click', function () {
+                     $('#sidebar').toggleClass('active');
+                 });
+             });
+         </script>
+    </body>
+</html>

@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block content %}
+
+
+<form action ="{{ url_for('client.exit_processing') }}" method = "post">
+
+  Input Token Id:<br/>
+  <input type="text" name="token_id">
+  <br/>
+  
+  Input Payment Method:<br/>
+  <select class="custom-select" name="pay_method" required>
+    <option value = "Cash">Cash</option>
+    <option value = "Online">Online</option>
+  </select>
+  <br/>
+  
+  <input type="submit">
+  
+</form>
+
+{% endblock %}

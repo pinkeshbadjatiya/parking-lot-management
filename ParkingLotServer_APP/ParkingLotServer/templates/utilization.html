@@ -42,7 +42,7 @@
 		<button name="button" class="btn btn-primary btn-block" type="submit" value="view_utilization">View Utilization</button>
 	</div>
 	
-	{% if chartDataPresent %}
+	{% if chartDataPresent == 'yes' %}
 	<div class="clearfix">
 	<div id="box1" style="float:left; margin-bottom:20px"><!-- Plotly chart will be drawn inside this DIV --></div>
 	<script>
@@ -137,6 +137,8 @@
 		Plotly.newPlot('box2', data, layout);
 	</script>
 	</div>
-	{% endif %}
+    {% elif chartDataPresent == 'no' %}
+    <div class="alert alert-danger" style="margin-bottom:20px"><p>No data present for the selected parking lot and date</p></div>
+    {% endif %}
   </form>
 {% endblock %}
