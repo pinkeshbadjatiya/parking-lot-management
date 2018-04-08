@@ -36,8 +36,7 @@ def login():
     	    return redirect(url_for('client.show_home'))
         else:
             flash('ERROR! Incorrect login credentials.', 'error')
-    #return render_template('login.html')
-    return redirect(url_for('client.show_home'))
+    return render_template('login.html')
 
 
 
