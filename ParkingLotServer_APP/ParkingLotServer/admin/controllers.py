@@ -1,4 +1,4 @@
-from flask import g, Blueprint, request, jsonify
+from flask import g, Blueprint, request, jsonify, response
 from flask_mail import Message
 
 import arrow
@@ -158,6 +158,24 @@ def view_utilization():
 
     return render_template('utilization.html', headerTitle='Parking Lot - Utilization', parkinglotList=plList, chartDataPresent='')
 
+@mod_admin.route('/registerdailyutil', methods=['GET', 'POST'])
+def register_daily_util():
+    if request.method == 'POST':
+        reqParams = request.json
+        utilDate = reqParams['utilDate']
+        anyUtilData = Utilization.query.filter_by(util_date=utilDate).first()
+        if(anyUtilData is not None):
+            return flask.jsonify({'message': 'ok'})
+        else:
+            try:
+                newUtilization = Utilization(reqParams['plID'], reqParams['utilDate'], reqParams['utilPerHourStr'], reqParams['revPerHourStr'], reqParams['avgUtil'], reqParams['totalRev'])
+                db.session.add(newUtilization)
+                db.session.commit()
+                return flask.jsonify({'message': 'ok'})
+                
+            except Exception, e:
+                return flask.jsonify({'error': e})
+                
 
 @mod_admin.route('/dashboard', methods=['GET', 'POST'])
 @login_required

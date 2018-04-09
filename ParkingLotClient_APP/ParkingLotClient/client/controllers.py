@@ -26,7 +26,7 @@ from flask import url_for
 
 mod_client = Blueprint('client', __name__)
 
-def populateHourlyUtil():
+def populateHourlyUtil(): #Write code for 23 to 00 of last day
     try:
         #Getting current date and current hour
         currDT = str(dt.now())
@@ -67,36 +67,6 @@ def populateHourlyUtil():
         db.session.commit()
     except Exception as e: 
         print (e)
-
-#Starting a scheduler for hourly jobs
-scheduler = BackgroundScheduler()
-scheduler.start()
-scheduler.add_job(
-    func=populateHourlyUtil,
-    trigger=IntervalTrigger(minutes=1),
-    id='Hourly_Util_Job',
-    name='Hourly_Util_Job',
-    replace_existing=True)
-  
-#Shutting down the scheduler when exiting the app
-atexit.register(lambda: scheduler.shutdown())
-
-"""def sendDailyUtil():
-    currDT = str(dt.datetime.now())
-    currDate = currDT[0:currDT.find(' ')]
-    
-    
-dailyScheduler = BackgroundScheduler()
-dailyScheduler.start()
-scheduler.add_job(
-    func=sendDailyUtil,
-    trigger=IntervalTrigger(days=1),
-    id='Daily_Util_Job',
-    name='Daily_Util_Job',
-    replace_existing=True)
-  
-# Shut down the scheduler when exiting the app
-atexit.register(lambda: dailyScheduler.shutdown())"""
 
 
 @mod_client.route('/home', methods=['GET', 'POST'])
