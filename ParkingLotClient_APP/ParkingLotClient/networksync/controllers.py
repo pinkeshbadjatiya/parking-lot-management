@@ -33,30 +33,30 @@ def computeDailyUtil():
     #Getting current parling lot id
     plDetail = ParkingLot.query.filter_by(pl_active='t').first()
     plID = plDetail.pl_id
-    
+
     #Getting Util Date
     yesterday = str(date.today() - timedelta(1))
-    
+
     #Getting Util Stats
     yUtils = HourlyUtil.query.filter(HourlyUtil.util_date == yesterday).all()
     avgUtil = 0.0;
     totalRev = 0.0;
-    
+
     utilPerHour = {}
     revPerHour = {}
     for elemHour in range(24):
         utilPerHour[elemHour] = 0.0;
         revPerHour[elemHour] = 0.0;
-    
+
     for yUtil in yUtils:
         revPerHour[yUtil.util_hour] = yUtil.rev
         utilPerHour[yUtil.util_hour] = yUtil.util
         avgUtil = avgUtil + yUtil.util
         if(yUtil.util_hour == 23):
             totalRev = rev;
-    
+
     avgUtil = float(avgUtil) / 24.0
-    
+
     utilPerHourStr = '['
     revPerHourStr = '['
     for elemHour in range(24):
@@ -64,10 +64,11 @@ def computeDailyUtil():
         revPerHourStr = revPerHourStr + revPerHour[elemHour] + ','
     utilPerHourStr = utilPerHourStr[0:-1] + ']'
     revPerHourStr = revPerHourStr[0:-1] + ']'
-    
+
     dailyUtilEntry = UtilizationStage(plID, yesterday, utilPerHourStr, revPerHourStr, avgUtil, totalRev, False)
     db.session.add(dailyUtilEntry)
     db.session.commit()
+
     
 def sendDailyUtils(compute_util=True):
     
@@ -79,14 +80,12 @@ def sendDailyUtils(compute_util=True):
         server_hostname = app.config['PARKING_LOT_ADMIN_HOSTNAME']
 
         # make a POST request
-        print ('***************************HERE1')
         server_response = requests.post(server_hostname + '/networksync/registerdailyutil', json={'plID': remainingUtil.pl_id, 'utilDate': str(remainingUtil.util_date), 'utilPerHourStr': remainingUtil.util_per_hour, 'revPerHourStr': remainingUtil.rev_per_hour, 'avgUtil': remainingUtil.avg_util, 'totalRev': remainingUtil.total_rev})
-        print ('***************************HERE2')
-        
+
         #On obtaining confirm code in HTTPResponse
         print (server_response.text)
         response = json.loads(server_response.text)
-        
+
         #Error at the admin end
         if 'error' in response:
             print ('ERROR (on inserting utilization at admin): ', response['error'])
@@ -98,8 +97,17 @@ def sendDailyUtils(compute_util=True):
                 db.session.add(remainingUtil)
                 db.session.commit()
 
-        
+
 @mod_networksync.route('/getunsentutils', methods=['GET'])
 def sendUnsentUtils():
     sendDailyUtils(compute_util=False)
     return jsonify({'message': 'ok'})
+
+
+@mod_networksync.route('/updatePrices', methods=['POST'])
+def update_local_prices():
+    data = request.get_json()
+    if 'price_snapshot' not in data:
+        return jsonify({'error': 'No PriceSnapshot given'})
+
+    price_snapshot = data['price_snapshot']
