@@ -14,13 +14,13 @@ Run the app:
     --> To run the server
         >> export FLASK_APP=ParkingLotServer/__init__.py
         >> export PYTHONPATH=$(pwd)
-        >> flask run
+        >> flask run --host="0.0.0.0" --port="8080"
         >> Access at http://127.0.0.1:5000/auth/login
 
     --> To run the client
         >> export FLASK_APP=ParkingLotClient/__init__.py
         >> export PYTHONPATH=$(pwd)
-        >> flask run
+        >> flask run --host="0.0.0.0" --port="5000"
         >> Access at http://127.0.0.1:5000/auth/login
 
 =============================================================
