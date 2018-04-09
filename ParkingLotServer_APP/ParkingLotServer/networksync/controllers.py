@@ -24,7 +24,7 @@ mod_networksync = Blueprint('networksync', __name__)
 def return_price_updates():
     data = request.get_json()
     if 'parkinglot_id' not in data:
-        return {'error': 'No ParkingLotID specified.'}
+        return jsonify({'error': 'No ParkingLotID specified.'})
 
     parklot_id = data['parkinglot_id']
 
@@ -46,23 +46,23 @@ def return_price_updates():
         db.session.commit()
 
         # Now return the new charge
-        return {
+        return jsonify({
             'price_snapshot': staged_snapshot.price_snapshot
-        }
+        })
 
     elif current_staging_charge.ch_sent == 't':
         # Charge was staged and already sent. Just skip
-        return {
+        return jsonify({
             'price_snapshot': ''
-        }
+        })
     elif current_staging_charge.ch_sent == 'f':
         # Charge is already staged but not sent. Send it now.
         current_staging_charge.ch_sent = 't'
         db.session.add(current_staging_charge)
         db.session.commit()
-        return {
+        return jsonify({
             'price_snapshot': current_staging_charge.price_snapshot
-        }
+        })
 
 
 def push_price_updates():
