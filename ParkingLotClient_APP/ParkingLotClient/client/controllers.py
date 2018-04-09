@@ -7,9 +7,6 @@ import arrow
 import jwt
 from passlib.hash import argon2
 
-import atexit
-from apscheduler.schedulers.background import BackgroundScheduler
-from apscheduler.triggers.interval import IntervalTrigger
 from sqlalchemy import and_, func, between
 
 import datetime
@@ -33,19 +30,19 @@ def populateHourlyUtil(): #Write code for 23 to 00 of last day
         currDate = currDT[0:currDT.find(' ')]
         currHour = currDT[currDT.find(' '):currDT.find(':')].strip()
         currHourInt = int(currHour)
-        
+
         #Getting capacity of the current parking lot
         activePL = ParkingLot.query.filter_by(pl_active = 't').first()
         parkingLotCapacity = int(activePL.pl_capacity);
-        
+
         #Getting number of current occupied slots and utilization percentage
         currActiveTokens = Token.query.filter_by(exit_date = None).all()
         currUtil = parkingLotCapacity - len(currActiveTokens)
         currUtilPercent = (currUtil * 100) / parkingLotCapacity
-        
+
         #Getting exit transactions of the last hour
         lastHourTransactions = Token.query.filter(between(Token.exit_date, func.to_date(currDate + " " + str(currHourInt-1) + ":00", "YYYY-MM-DD HH24:MI"), func.to_date(currDate + " " + str(currHourInt-1) + ":59", "YYYY-MM-DD HH24:MI"))).all()
-        
+
         #Getting revenue collected till start of the last hour
         prevRev = 0.0
         if(currHourInt >= 2):
@@ -54,7 +51,7 @@ def populateHourlyUtil(): #Write code for 23 to 00 of last day
                 prevRev = 0.0
             else:
                 prevRev = float(lastlastHourUtil.rev)
-        
+
         #Getting revenue collected in the last hour
         currRev = 0.0
         for lastHourTransaction in lastHourTransactions:
@@ -62,10 +59,10 @@ def populateHourlyUtil(): #Write code for 23 to 00 of last day
 
         #Computing cumulative revenue and storing as a new row in the Hourly Util table
         currCumuRev = currRev + prevRev
-        hourlyUtilEntry = HourlyUtil(currDate, currHour, currUtilPercent, currCumuRev)        
+        hourlyUtilEntry = HourlyUtil(currDate, currHour, currUtilPercent, currCumuRev)
         db.session.add(hourlyUtilEntry)
         db.session.commit()
-    except Exception as e: 
+    except Exception as e:
         print (e)
 
 
