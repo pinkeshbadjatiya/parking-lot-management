@@ -7,12 +7,12 @@ from passlib.hash import argon2
 
 from flask import request
 from sqlalchemy import and_
-from ParkingLotServer import db
 
 from flask_login import login_required
 from flask import Flask, render_template, redirect, flash
 from .models import StagingPriceUpdates
 from ParkingLotServer.admin.models import Charge, ParkingLot, Utilization
+from ParkingLotServer import app, db
 import requests
 
 from flask import url_for
@@ -104,7 +104,7 @@ def push_price_updates():
                 active_charge.ch_sent = 't'
                 db.session.add(active_charge)
                 db.session.commit()
-                
+
 @mod_networksync.route('/registerdailyutil', methods=['GET', 'POST'])
 def register_daily_util():
     if request.method == 'POST':
@@ -119,6 +119,6 @@ def register_daily_util():
                 db.session.add(newUtilization)
                 db.session.commit()
                 return jsonify({'message': 'ok'})
-                
+
             except Exception, e:
                 return jsonify({'error': e})

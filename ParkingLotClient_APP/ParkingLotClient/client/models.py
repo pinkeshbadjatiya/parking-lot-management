@@ -93,13 +93,12 @@ class Charge(db.Model):
     __tablename__ = "charge"
 
     charge_id = db.Column(db.Integer, primary_key=True)
+    ch_active = db.Column(db.Boolean, default=True, nullable=False)
+    update_date = db.Column(db.DateTime, default=db.func.current_timestamp(), nullable=False)
+
     pl_id = db.Column(db.Integer, nullable=False)
     price_snapshot = db.Column(db.String(2500), nullable=False)
 
-    ch_active = db.Column(db.Boolean, default=False, nullable=False)
-    update_date = db.Column(db.DateTime, default=db.func.current_timestamp(), nullable=False)
-
-    def __init__(self, charge_id, pl_id, price_snapshot):
-        self.charge_id = charge_id
+    def __init__(self, pl_id, price_snapshot):
         self.pl_id = pl_id
         self.price_snapshot = price_snapshot

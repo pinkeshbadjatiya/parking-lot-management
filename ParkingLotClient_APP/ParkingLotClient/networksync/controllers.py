@@ -23,7 +23,7 @@ from flask_login import login_required
 from flask import Flask, render_template, redirect, url_for, session
 
 from .models import UtilizationStage
-from ParkingLotClient.client.models import HourlyUtil, ParkingLot
+from ParkingLotClient.client.models import HourlyUtil, ParkingLot, Charge
 
 from flask import url_for
 
@@ -69,9 +69,9 @@ def computeDailyUtil():
     db.session.add(dailyUtilEntry)
     db.session.commit()
 
-    
+
 def sendDailyUtils(compute_util=True):
-    
+
     if compute_util:
         computeDailyUtil()
  
@@ -111,3 +111,13 @@ def update_local_prices():
         return jsonify({'error': 'No PriceSnapshot given'})
 
     price_snapshot = data['price_snapshot']
+    current_parkinglot = ParkingLot.query.filter_by().first()
+
+    # Make the old active charges inactive and insert the new active charge
+    old_active_charges_charges = Charge.query.filter(Charge.ch_active == 't').update({Charge.ch_active: 'f'})
+    db.session.add(old_active_charges)
+    new_charge = Charge(current_parkinglot.id, price_snapshot)
+    db.session.add(new_charge)
+    db.session.commit()
+
+    return jsonify({'message': 'ok'})
