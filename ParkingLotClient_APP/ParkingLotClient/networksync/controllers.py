@@ -7,7 +7,7 @@ import arrow
 import jwt
 import requests
 from passlib.hash import argon2
-
+import json
 
 import atexit
 from apscheduler.schedulers.background import BackgroundScheduler
@@ -44,7 +44,7 @@ def computeDailyUtil():
     
     utilPerHour = {}
     revPerHour = {}
-    for elemHour in 0..23:
+    for elemHour in range(24):
         utilPerHour[elemHour] = 0.0;
         revPerHour[elemHour] = 0.0;
     
@@ -59,7 +59,7 @@ def computeDailyUtil():
     
     utilPerHourStr = '['
     revPerHourStr = '['
-    for elemHour in 0..23:
+    for elemHour in range(24):
         utilPerHourStr = utilPerHourStr + utilPerHour[elemHour] + ','
         revPerHourStr = revPerHourStr + revPerHour[elemHour] + ','
     utilPerHourStr = utilPerHourStr[0:-1] + ']'
@@ -69,32 +69,37 @@ def computeDailyUtil():
     db.session.add(dailyUtilEntry)
     db.session.commit()
     
-#@mod_networksync.route('/getRemainingUtils', methods=['GET', 'POST'])
-def sendDailyUtils():
-    computeDailyUtil()
+def sendDailyUtils(compute_util=True):
+    
+    if compute_util:
+        computeDailyUtil()
  
-    remainingUtils = UtilizationStage.query.filter_by(isSent = False).all()
+    remainingUtils = UtilizationStage.query.filter_by(is_sent = False).all()
     for remainingUtil in remainingUtils:
         server_hostname = app.config['PARKING_LOT_ADMIN_HOSTNAME']
 
         # make a POST request
-        server_response = requests.post(server_hostname + '/networksync/registerdailyutil', json={'plID': remainingUtil.pl_id, 'utilDate': remainingUtil.util_date, 'utilPerHourStr': remainingUtil.util_per_hour, 'revPerHourStr': remainingUtil.rev_per_hour, 'avgUtil': remainingUtil.avg_util, 'totalRev': remainingUtil.total_rev})
+        print ('***************************HERE1')
+        server_response = requests.post(server_hostname + '/networksync/registerdailyutil', json={'plID': remainingUtil.pl_id, 'utilDate': str(remainingUtil.util_date), 'utilPerHourStr': remainingUtil.util_per_hour, 'revPerHourStr': remainingUtil.rev_per_hour, 'avgUtil': remainingUtil.avg_util, 'totalRev': remainingUtil.total_rev})
+        print ('***************************HERE2')
         
         #On obtaining confirm code in HTTPResponse
+        print (server_response.text)
         response = json.loads(server_response.text)
         
         #Error at the admin end
         if 'error' in response:
-            print 'ERROR (on inserting utilization at admin): ', response['error']
+            print ('ERROR (on inserting utilization at admin): ', response['error'])
 
         else:
-            #Update current object's isSent to True if the response came properly
+            #Update current object's is_sent to True if the response came properly
             if server_response.status_code == 200:
-                remainingUtil.isSent = True
+                remainingUtil.is_sent = True
                 db.session.add(remainingUtil)
                 db.session.commit()
+
         
-        
-"""def sendRemainingUtils():
-    sendUtils()"""
-        
+@mod_networksync.route('/getunsentutils', methods=['GET'])
+def sendUnsentUtils():
+    sendDailyUtils(compute_util=False)
+    return jsonify({'message': 'ok'})

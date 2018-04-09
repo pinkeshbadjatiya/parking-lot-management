@@ -1,4 +1,4 @@
-from flask import g, Blueprint, request, jsonify
+from flask import g, Blueprint, request, jsonify, current_app
 from flask_mail import Message
 
 import arrow
@@ -7,12 +7,12 @@ from passlib.hash import argon2
 
 from flask import request
 from sqlalchemy import and_
-from ParkingLotServer import app, db
+from ParkingLotServer import db
+
 from flask_login import login_required
 from flask import Flask, render_template, redirect, flash
-#from .models import ParkingLot, Utilization, Charge
 from .models import StagingPriceUpdates
-from ParkingLotServer.admin.models import Charge
+from ParkingLotServer.admin.models import Charge, ParkingLot, Utilization
 import requests
 
 from flask import url_for
@@ -88,7 +88,7 @@ def push_price_updates():
             continue
         elif current_staging_charge.ch_sent == 'f':
             # Charge is already staged but not sent. Send it now.
-            client_hostname = app.config['PARKING_LOT_CLIENT_HOSTNAMES'][active_charge.pl_id]
+            client_hostname = current_app.config['PARKING_LOT_CLIENT_HOSTNAMES'][active_charge.pl_id]
 
             # make a POST request
             res = requests.post(client_hostname + '/networksync/updatePrices', json={
@@ -104,3 +104,21 @@ def push_price_updates():
                 active_charge.ch_sent = 't'
                 db.session.add(active_charge)
                 db.session.commit()
+                
+@mod_networksync.route('/registerdailyutil', methods=['GET', 'POST'])
+def register_daily_util():
+    if request.method == 'POST':
+        reqParams = request.json
+        utilDate = reqParams['utilDate']
+        anyUtilData = Utilization.query.filter_by(util_date=utilDate).first()
+        if(anyUtilData is not None):
+            return jsonify({'message': 'ok'})
+        else:
+            try:
+                newUtilization = Utilization(reqParams['plID'], reqParams['utilDate'], reqParams['utilPerHourStr'], reqParams['revPerHourStr'], reqParams['avgUtil'], reqParams['totalRev'])
+                db.session.add(newUtilization)
+                db.session.commit()
+                return jsonify({'message': 'ok'})
+                
+            except Exception, e:
+                return jsonify({'error': e})
