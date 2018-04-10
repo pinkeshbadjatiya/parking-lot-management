@@ -208,7 +208,7 @@ def calc_price(entry_dtime, exit_dtime, price_snapshot):
 
 @mod_client.route('/exit', methods=['GET', 'POST'])
 def exit_processing():
-    
+
     if request.method == 'POST':
 
         token_input = request.form["token_id"]
@@ -266,15 +266,15 @@ def token_display():
         entry_time = session['customer_entry_time']
         session['customer_entry_time'] = ""
         # print(customer_entry_time, file=sys.stderr)
-        session['token_session'] = False
+        opId = session['operatoId']
+        session['operatoId'] = ""
 
+        session['token_session'] = False
         activePL = ParkingLot.query.filter_by(pl_active = 't').first()
+
         #if (activePL is not None):
         pl_Name = activePL.pl_name
         pl_Address = activePL.pl_address
-
-        #activePL = Users.query.all().first()
-        opId = ""
 
         return render_template('tokendisplay.html', headerTitle='Customer Token', tokenId=token_id, entryTime=entry_time, plName=pl_Name, plAddress=pl_Address, operatorId=opId )
     else:
@@ -301,7 +301,7 @@ def entry_processing():
                 chid = notActiveCharge.charge_id
 
         # create and push new token and generate token id
-        getToken = Token(charge_id=chid, vehicle_no=carNo, entry_date=entry_dtime)
+        getToken = Token(charge_id=chid, vehicle_no=carNo, entry_date=entry_dtime, entry_operator_id=current_user.id)
         db.session.add(getToken)
         db.session.commit()
         # print(new_token.token_id, file=sys.stderr)
@@ -312,6 +312,7 @@ def entry_processing():
 
         session['new_token_id'] = getToken.token_id
         session['customer_entry_time'] = entry_dtime
+        session['operatoId'] = current_user.id
         session['token_session'] = True
         return redirect(url_for('client.token_display'))
     else:

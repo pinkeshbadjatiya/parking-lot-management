@@ -50,11 +50,11 @@
     </tr>
   </table>
 
-  <ul class="navbar-nav mr-auto">
-    <li class="nav-item active">
-      <a class="nav-link" href="{{url_for('client.show_home')}}">Print</a>
-    </li>
-  </ul>
+  <div class="input-group" style="margin-bottom:20px">
+      <a class="nav-link" style="width:100%" href="{{url_for('client.show_home')}}">
+        <button name="button" class="btn btn-primary btn-block">Print</button>
+      </a>
+  </div>
 
   </div>
   </form>
