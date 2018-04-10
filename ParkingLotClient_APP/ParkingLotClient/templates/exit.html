@@ -18,6 +18,14 @@
 </div>
 
 
+{% if errorMsg %}
+
+<div class="alert alert-danger" role="alert">
+  {{errorMsg}}
+</div>
+{% endif %}
+
+
 <form action ="{{ url_for('client.exit_processing') }}" method = "post">
 
   Input Token Id:<br/>
@@ -30,17 +38,12 @@
     <option value = "Online">Online</option>
   </select>
   <br/>
-  
-  <input type="submit">
+  <br/>
+  <div class="input-group" style="margin-bottom:20px">
+    <button name="button" class="btn btn-primary btn-block" type="submit">Submit</button>
+  </div>
+
   
 </form>
-
-{% if is_error %}
-
-<br/>
-<h5>Error:</h5>
-<em>{{msg}}</em>
-
-{% endif %}
 
 {% endblock %}

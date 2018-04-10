@@ -220,9 +220,10 @@ def exit_processing():
         token_object_exists = 0
 
         # Extract Token corresponding to queried token_id
-        if isinstance(token_input, (int, long)):
+        if token_input.isdigit():
             token_object_exists = Token.query.filter_by(token_id=token_input).count()
             token_object = Token.query.filter_by(token_id=token_input).first()
+
 
         if token_object_exists > 0:
             if token_object.exit_date is None:
@@ -257,12 +258,11 @@ def exit_processing():
                 return redirect(url_for('client.payment_process'))
 
             else:
-                return render_template('exit.html', headerTitle='Parking Lot - Exit', msg="Token already used", is_error="true")
+                return render_template('exit.html', headerTitle='Parking Lot - Exit', errorMsg="Token already used")
         else:
-            return render_template('exit.html', headerTitle='Parking Lot - Exit', msg="Invalid Token", is_error="true")
-
+            return render_template('exit.html', headerTitle='Parking Lot - Exit', errorMsg="Invalid Token")
     else:
-        return render_template('exit.html', headerTitle='Parking Lot - Exit', msg="", is_error="")
+        return render_template('exit.html', headerTitle='Parking Lot - Exit', errorMsg="")
 
 
 @mod_client.route('/tokendisplay', methods=['GET', 'POST'])

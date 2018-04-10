@@ -23,6 +23,7 @@ mod_auth = Blueprint('authentication', __name__)
 
 @mod_auth.route('/login', methods=['GET','POST'])
 def login():
+    errorMsg = ''
     if request.method == 'POST':
 	email = request.form['email']
 	password = request.form['password']
@@ -33,11 +34,11 @@ def login():
             db.session.commit()
             login_user(user)
             flash('Thanks for logging in, {}'.format(current_user.email))
-    	    return redirect(url_for('client.show_home'))
+    	    return redirect(url_for('client.show_home', headerTitle='Parking Lot System - Dashboard'))
         else:
-            flash('ERROR! Incorrect login credentials.', 'error')
-    return render_template('login.html')
-
+            #flash('ERROR! Incorrect login credentials.', 'error')
+            errorMsg = 'Invalid Login! Try Again.'
+    return render_template('login.html' ,headerTitle='Parking Lot System - Login', errorMessage = errorMsg)
 
 
 @mod_auth.route('/register' , methods=['GET','POST'])
