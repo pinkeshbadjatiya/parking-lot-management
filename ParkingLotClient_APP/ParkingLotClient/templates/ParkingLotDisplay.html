@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+{% block content %}
+
+<body>
+
+  <form>
+  <div>
+
+  <div class="line"></div>
+
+    <table>
+      <tr>
+        <td>
+            <span>Empty slots</span>
+        </td>
+        <td>
+            <button type="button" class="btn btn-info" id="empty_slot">{{pl_empty_slots}}</button>
+        </td>
+      </tr>
+      <tr>
+        <td>
+            <span>Current average Price</span>
+        </td>
+        <td>
+          <button type="button" class="btn btn-info" id="hourlyavgprice">{{fourHourAvg}}</button>
+        </td>
+      </tr>
+      <tr>
+        <td>
+            <span>Daily average price</span>
+        </td>
+        <td>
+            <button type="button" class="btn btn-info" id="dailyavgprice">{{oneDayAvg}}</button>
+        </td>
+      </tr>
+      <tr>
+        <td>
+            <span>Weekly average price</span>
+        </td>
+        <td>
+            <button type="button" class="btn btn-info" id="weeklyavgprice">{{twoDayAvg}}</button>
+        </td>
+      </tr>
+    </table>
+
+  </div>
+  </form>
+
+  <script type="text/javascript" charset="utf-8">
+    var socket = io.connect();
+    // verify our websocket connection is established
+    socket.on('connect', function() {
+          console.log("connected");
+    });
+
+    socket.on('message', function(data) {
+          console.log(data);
+          document.getElementById("empty_slot").innerHTML = data.pl_empty_slots;
+    });
+
+    function refresh() {
+      document.location.reload(true );
+    }
+
+
+   function checkForRefresh()
+       var time = new Date().getTime();
+       time.setHours(01);
+       time.setMinutes(0);
+       time.setSeconds(0);
+       var currentTime = new Date().getTime();
+       if(currentTime>time){
+            console.error("Time is in the Past");
+            return false;
+      }
+      setTimeout(refresh, time-currentTime);
+      return true;
+    }
+
+
+  </script>
+
+</body>
+
+{% endblock %}
