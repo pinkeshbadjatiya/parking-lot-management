@@ -207,7 +207,10 @@ def calc_price(entry_dtime, exit_dtime, price_snapshot):
 
 @mod_client.route('/exit', methods=['GET', 'POST'])
 def exit_processing():
-
+    t1 = Token(72, 'YUJM3429', None, None, dt.strptime('2017-03-1 12:10', '%Y-%m-%d %H:%M'), None )
+    db.session.add(t1)
+    db.session.commit()
+    
     if request.method == 'POST':
 
         token_input = request.form["token_id"]
