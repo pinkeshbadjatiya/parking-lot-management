@@ -17,16 +17,19 @@ import datetime
 from datetime import datetime as dt
 from datetime import date, timedelta
 
-from ParkingLotClient import app
+from ParkingLotClient import app, socketio
 from flask_login import login_required
 from flask import Flask, render_template, redirect, url_for, session
 
 from .models import UtilizationStage
 from ParkingLotClient.client.models import HourlyUtil, ParkingLot, Charge
+from ParkingLotClient.client.controllers import computerAvgParkingLotRate
 
 from flask import url_for
+from flask.ext.socketio import SocketIO, emit
 
 mod_networksync = Blueprint('networksync', __name__)
+#socketio = SocketIO(app)
 
 def computeDailyUtil():
     #Getting current parling lot id
@@ -120,5 +123,8 @@ def update_local_prices():
     new_charge = Charge(current_parkinglot.id, price_snapshot)
     db.session.add(new_charge)
     db.session.commit()
+    four_hour_avg, one_day_avg, two_day_avg = computerAvgParkingLotRate()
+
+    socketio.emit('Charge_Message', { 'fourHourAvg': four_hour_avg, 'oneDayAvg': one_day_avg, 'twoDayAvg': two_day_avg})
 
     return jsonify({'message': 'ok'})

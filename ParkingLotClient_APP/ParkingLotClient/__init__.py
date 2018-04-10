@@ -8,6 +8,7 @@ from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.interval import IntervalTrigger
 from datetime import datetime, timedelta
 import logging, requests
+from flask.ext.socketio import SocketIO, emit
 
 def init_db(db):
     db.create_all()
@@ -24,6 +25,8 @@ app.config.from_object('client_config')
 db = SQLAlchemy(app)
 init_db(db)
 migrate = Migrate(app, db)
+
+socketio = SocketIO(app)
 
 login_manager = LoginManager()
 login_manager.init_app(app)

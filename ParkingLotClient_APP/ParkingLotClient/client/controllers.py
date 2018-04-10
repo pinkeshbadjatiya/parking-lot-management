@@ -12,19 +12,19 @@ from sqlalchemy import and_, func, between
 import datetime
 from datetime import datetime as dt
 
-from ParkingLotClient import app
+from ParkingLotClient import app, socketio
 from flask_login import login_required
 from flask import Flask, render_template, redirect, url_for, session
 
 from .models import Token, Charge, ParkingLot, HourlyUtil
-from flask.ext.socketio import SocketIO, emit
+
 #from .models import User
 
 from flask import url_for
 from flask_login import current_user
 
 mod_client = Blueprint('client', __name__)
-socketio = SocketIO(app)
+
 
 def populateHourlyUtil(): #Write code for 23 to 00 of last day
     try:
@@ -77,6 +77,51 @@ def getCurUtilization():
     emptySlots = parkingLotCapacity - len(currActiveTokens)
     return emptySlots
 
+def computerAvgParkingLotRate():
+        activeCharge = Charge.query.filter(Charge.ch_active.is_(True)).first()
+        if (activeCharge is not None):
+            price_snapshot = activeCharge.price_snapshot
+        else:
+            inactiveCharge = Charge.query.filter(Charge.ch_active.is_(False)).first()
+            if (inactiveCharge is not None):
+                price_snapshot = inactiveCharge.price_snapshot
+        ls = price_snapshot.split('#')
+        snap = []
+        for i in ls:
+            snap.append(i.split(','))
+
+        now = dt.now()
+        now_day = now.weekday()
+        now_day = (now_day + 1) % 7
+        now_hour = now.hour
+
+        summ = 0
+        four_hour_avg = 0
+        one_day_avg = 0
+        two_day_avg = 0
+
+        for i in range(now_hour, now_hour + 4):
+            #print( snap[now_day][i], file=sys.stderr)
+            four_hour_avg += float(snap[now_day][i%24])
+        four_hour_avg =  float(four_hour_avg) / 4
+
+        # calculate average for one day
+        for i in range(0, 24):
+            summ += float(snap[now_day][i])
+        one_day_avg = float(summ) / 24
+
+        # calculate average for more than one day
+        j = 1
+        while j != 2:
+            now_day = (now_day + 1) % 7
+            for i in range(0, 24):
+                summ += float(snap[now_day][i])
+            j = j + 1
+
+        two_day_avg = float(summ) / (24 * 2)
+        return int(four_hour_avg), int(one_day_avg), int(two_day_avg)
+
+
 @mod_client.route('/home', methods=['GET', 'POST'])
 @login_required
 def show_home():
@@ -84,51 +129,9 @@ def show_home():
 
 
 @mod_client.route('/ParkingLotDisplay', methods=['GET', 'POST'])
-@login_required
+#@login_required
 def display_info():
-    activeCharge = Charge.query.filter(Charge.ch_active.is_(True)).first()
-    if (activeCharge is not None):
-        price_snapshot = activeCharge.price_snapshot
-    else:
-        inactiveCharge = Charge.query.filter(Charge.ch_active.is_(False)).first()
-        if (inactiveCharge is not None):
-            price_snapshot = inactiveCharge.price_snapshot
-    ls = price_snapshot.split('#')
-    snap = []
-    for i in ls:
-        snap.append(i.split(','))
-
-    now = dt.now()
-    now_day = now.weekday()
-    now_day = (now_day + 1) % 7
-    now_hour = now.hour
-
-    summ = 0
-    four_hour_avg = 0
-    one_day_avg = 0
-    two_day_avg = 0
-
-    for i in range(now_hour, now_hour + 4):
-        #print( snap[now_day][i], file=sys.stderr)
-        four_hour_avg += float(snap[now_day][i])
-
-    four_hour_avg =  float(four_hour_avg) / 4
-
-        # calculate average for one day
-    for i in range(0, 24):
-        summ += float(snap[now_day][i])
-    one_day_avg = float(summ) / 24
-
-    # calculate average for more than one day
-    j = 1
-    while j != 2:
-        now_day = (now_day + 1) % 7
-        for i in range(0, 24):
-            summ += float(snap[now_day][i])
-        j = j + 1
-
-    two_day_avg = float(summ) / (24 * 2)
-
+    four_hour_avg, one_day_avg, two_day_avg = computerAvgParkingLotRate()
     emptySlots = getCurUtilization()
 
     return render_template('ParkingLotDisplay.html', headerTitle='Parking Lot', pl_empty_slots = emptySlots, fourHourAvg = int(four_hour_avg), oneDayAvg = int(one_day_avg), twoDayAvg = int(two_day_avg))
@@ -246,7 +249,7 @@ def exit_processing():
                 db.session.commit()
 
                 emptySlots = getCurUtilization()
-                socketio.emit('message', {'pl_empty_slots': emptySlots})
+                socketio.emit('PL_Message', {'pl_empty_slots': emptySlots})
 
                 session['pay_method'] = pay_method
                 session['final_price'] = final_price
@@ -318,7 +321,12 @@ def entry_processing():
             #print(getToken.token_id, totalCarIn, file=sys.stderr)
 
             emptySlots = getCurUtilization()
-            socketio.emit('message', {'pl_empty_slots': emptySlots})
+            #four_hour_avg  = 30+emptySlots
+            #one_day_avg =  30+ emptySlots
+            #two_day_avg =  30+ emptySlots
+
+            #socketio.emit('PL_Message', { 'pl_empty_slots' : emptySlots, 'fourHourAvg': four_hour_avg, 'oneDayAvg': one_day_avg, 'twoDayAvg': two_day_avg})
+            socketio.emit('PL_Message', {'pl_empty_slots': emptySlots})
 
             session['new_token_id'] = getToken.token_id
             session['customer_entry_time'] = entry_dtime

@@ -53,9 +53,16 @@
           console.log("connected");
     });
 
-    socket.on('message', function(data) {
+    socket.on('PL_Message', function(data) {
           console.log(data);
           document.getElementById("empty_slot").innerHTML = data.pl_empty_slots;
+    });
+
+    socket.on('Charge_Message', function(data) {
+          console.log(data);
+          document.getElementById("hourlyavgprice").innerHTML = data.fourHourAvg;
+          document.getElementById("dailyavgprice").innerHTML = data.oneDayAvg;
+          document.getElementById("weeklyavgprice").innerHTML = data.twoDayAvg;
     });
 
     function refresh() {
