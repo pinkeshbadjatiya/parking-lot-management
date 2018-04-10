@@ -78,11 +78,13 @@ def getCurUtilization():
     return emptySlots
 
 @mod_client.route('/home', methods=['GET', 'POST'])
+@login_required
 def show_home():
     return render_template('home.html', headerTitle='Parking Lot - Home')
 
 
 @mod_client.route('/ParkingLotDisplay', methods=['GET', 'POST'])
+@login_required
 def display_info():
     activeCharge = Charge.query.filter(Charge.ch_active.is_(True)).first()
     if (activeCharge is not None):
@@ -134,6 +136,7 @@ def display_info():
 
 
 @mod_client.route('/payment', methods=['GET', 'POST'])
+@login_required
 def payment_process():
 
     if(session['allow']):
@@ -207,16 +210,20 @@ def calc_price(entry_dtime, exit_dtime, price_snapshot):
 
 
 @mod_client.route('/exit', methods=['GET', 'POST'])
+@login_required
 def exit_processing():
 
     if request.method == 'POST':
 
         token_input = request.form["token_id"]
         pay_method = request.form["pay_method"]
+        token_object_exists = 0
 
         # Extract Token corresponding to queried token_id
-        token_object_exists = Token.query.filter_by(token_id=token_input).count()
-        token_object = Token.query.filter_by(token_id=token_input).first()
+        if isinstance(token_input, (int, long)):
+            token_object_exists = Token.query.filter_by(token_id=token_input).count()
+            token_object = Token.query.filter_by(token_id=token_input).first()
+
         if token_object_exists > 0:
             if token_object.exit_date is None:
 
@@ -259,6 +266,7 @@ def exit_processing():
 
 
 @mod_client.route('/tokendisplay', methods=['GET', 'POST'])
+@login_required
 def token_display():
     if(session['token_session']):
         token_id = session['new_token_id']
@@ -282,6 +290,7 @@ def token_display():
 
 
 @mod_client.route('/entry', methods=['GET', 'POST'])
+@login_required
 def entry_processing():
     if request.method == 'POST':
         # get the current time to push along with customer car no
