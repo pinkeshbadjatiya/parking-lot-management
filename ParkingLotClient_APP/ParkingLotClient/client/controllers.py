@@ -109,8 +109,7 @@ def display_info():
     two_day_avg = 0
 
     for i in range(now_hour, now_hour + 4):
-        print( snap[now_day][i], file=sys.stderr)
-        print( type(snap[now_day][i]), file=sys.stderr)
+        #print( snap[now_day][i], file=sys.stderr)
         four_hour_avg += float(snap[now_day][i])
 
     four_hour_avg =  float(four_hour_avg) / 4
@@ -309,20 +308,25 @@ def entry_processing():
             if (notActiveCharge is not None):
                 chid = notActiveCharge.charge_id
 
-        # create and push new token and generate token id
-        getToken = Token(charge_id=chid, vehicle_no=carNo, entry_date=entry_dtime, entry_operator_id=current_user.id)
-        db.session.add(getToken)
-        db.session.commit()
-        # print(new_token.token_id, file=sys.stderr)
-        #print(getToken.token_id, totalCarIn, file=sys.stderr)
+        curEmprtySlots = getCurUtilization()
+        if( curEmprtySlots > 0 ) :
+            # create and push new token and generate token id
+            getToken = Token(charge_id=chid, vehicle_no=carNo, entry_date=entry_dtime, entry_operator_id=current_user.id)
+            db.session.add(getToken)
+            db.session.commit()
+            # print(new_token.token_id, file=sys.stderr)
+            #print(getToken.token_id, totalCarIn, file=sys.stderr)
 
-        emptySlots = getCurUtilization()
-        socketio.emit('message', {'pl_empty_slots': emptySlots})
+            emptySlots = getCurUtilization()
+            socketio.emit('message', {'pl_empty_slots': emptySlots})
 
-        session['new_token_id'] = getToken.token_id
-        session['customer_entry_time'] = entry_dtime
-        session['operatoId'] = current_user.id
-        session['token_session'] = True
-        return redirect(url_for('client.token_display'))
+            session['new_token_id'] = getToken.token_id
+            session['customer_entry_time'] = entry_dtime
+            session['operatoId'] = current_user.id
+            session['token_session'] = True
+            return redirect(url_for('client.token_display'))
+        else:
+            errorMsg = 'Parking Lot full !!'
+            return render_template('entry.html', headerTitle='Parking Lot - Entry for Customer', errorMessage = errorMsg)
     else:
         return render_template('entry.html', headerTitle='Parking Lot - Entry for Customer')
