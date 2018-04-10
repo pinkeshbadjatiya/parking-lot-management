@@ -21,6 +21,7 @@ from flask.ext.socketio import SocketIO, emit
 #from .models import User
 
 from flask import url_for
+from flask_login import current_user
 
 mod_client = Blueprint('client', __name__)
 socketio = SocketIO(app)
@@ -234,6 +235,7 @@ def exit_processing():
                 token_object.computed_charge = final_price
                 token_object.pay_method = pay_method
                 token_object.exit_date = exit_dtime
+                token_object.exit_operator_id = current_user.id
                 db.session.commit()
 
                 emptySlots = getCurUtilization()
