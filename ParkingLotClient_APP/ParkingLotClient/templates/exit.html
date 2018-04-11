@@ -1,13 +1,15 @@
 {% extends "base.html" %}
 {% block content %}
 
+<body>
+
 
 <div style="margin-bottom:20px">
   <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
     <div class="collapse navbar-collapse" id="navbarSupportedContent">
       <ul class="navbar-nav mr-auto">
 	<li class="nav-item active">
-	  <a class="nav-link" href="{{url_for('client.show_home')}}">Dashboard</a>
+	  <a class="nav-link" href="{{url_for('client.show_home')}}">Home</a>
 	</li>
 	<li class="nav-item">
 	  <a class="nav-link" href="{{url_for('authentication.logout')}}">Log Out</a>
@@ -31,7 +33,7 @@
   Input Token Id:<br/>
   <input type="text" name="token_id">
   <br/>
-  
+
   Input Payment Method:<br/>
   <select class="custom-select" name="pay_method" required>
     <option value = "Cash">Cash</option>
@@ -43,7 +45,7 @@
     <button name="button" class="btn btn-primary btn-block" type="submit">Submit</button>
   </div>
 
-  
-</form>
 
+</form>
+</body>
 {% endblock %}

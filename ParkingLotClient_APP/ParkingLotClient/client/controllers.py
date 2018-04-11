@@ -47,13 +47,13 @@ def populateHourlyUtil():
         if(currHourInt == 0):
             prevDT = str(dt.now() - timedelta(days=1))
             prevDate = prevDT[0:prevDT.find(' ')]
-            
+
             #Getting exit transactions of the last hour of the previous day
             lastHourTransactions = Token.query.filter(between(Token.exit_date, func.to_date(prevDate + " 23:00", "YYYY-MM-DD HH24:MI"), func.to_date(prevDate + " 23:59", "YYYY-MM-DD HH24:MI"))).all()
 
             #Getting revenue collected till start of the last hour
             prevRev = 0.0
-            
+
             lastlastHourUtil = HourlyUtil.query.filter(and_(HourlyUtil.util_date == func.to_date(prevDate, "YYYY-MM-DD"), HourlyUtil.util_hour == 22)).first()
             if(lastlastHourUtil is None):
                 prevRev = 0.0
@@ -64,14 +64,14 @@ def populateHourlyUtil():
             currRev = 0.0
             for lastHourTransaction in lastHourTransactions:
                 currRev = currRev + float(lastHourTransaction.computed_charge)
-            
+
             #Computing cumulative revenue and storing as a new row in the Hourly Util table
             currCumuRev = currRev + prevRev
             hourlyUtilEntry = HourlyUtil(prevDate, 23, currUtilPercent, currCumuRev)
             db.session.add(hourlyUtilEntry)
             db.session.commit()
         else:
-            
+
             #Getting exit transactions of the last hour
             lastHourTransactions = Token.query.filter(between(Token.exit_date, func.to_date(currDate + " " + str(currHourInt-1) + ":00", "YYYY-MM-DD HH24:MI"), func.to_date(currDate + " " + str(currHourInt-1) + ":59", "YYYY-MM-DD HH24:MI"))).all()
 
@@ -94,7 +94,7 @@ def populateHourlyUtil():
             hourlyUtilEntry = HourlyUtil(currDate, currHour, currUtilPercent, currCumuRev)
             db.session.add(hourlyUtilEntry)
             db.session.commit()
-            
+
     except Exception, e:
         print (e)
 
@@ -105,7 +105,7 @@ def getCurUtilization():
     #Getting number of current occupied slots and utilization percentage
     currActiveTokens = Token.query.filter_by(exit_date = None).all()
     emptySlots = parkingLotCapacity - len(currActiveTokens)
-    return emptySlots
+    return parkingLotCapacity, emptySlots
 
 def computerAvgParkingLotRate():
         activeCharge = Charge.query.filter(Charge.ch_active.is_(True)).first()
@@ -162,9 +162,9 @@ def show_home():
 #@login_required
 def display_info():
     four_hour_avg, one_day_avg, two_day_avg = computerAvgParkingLotRate()
-    emptySlots = getCurUtilization()
+    totalSlots, emptySlots = getCurUtilization()
 
-    return render_template('ParkingLotDisplay.html', headerTitle='Parking Lot', pl_empty_slots = emptySlots, fourHourAvg = int(four_hour_avg), oneDayAvg = int(one_day_avg), twoDayAvg = int(two_day_avg))
+    return render_template('ParkingLotDisplay.html', headerTitle='Parking Lot - Charges',pl_total_slots=totalSlots, pl_empty_slots=emptySlots, fourHourAvg = int(four_hour_avg), oneDayAvg = int(one_day_avg), twoDayAvg = int(two_day_avg))
 
 
 @mod_client.route('/payment', methods=['GET', 'POST'])
@@ -278,7 +278,7 @@ def exit_processing():
                 token_object.exit_operator_id = current_user.id
                 db.session.commit()
 
-                emptySlots = getCurUtilization()
+                totalSlots, emptySlots = getCurUtilization()
                 socketio.emit('PL_Message', {'pl_empty_slots': emptySlots})
 
                 session['pay_method'] = pay_method
@@ -329,42 +329,41 @@ def entry_processing():
         entry_dtime = dt.now()
         entry_dtime = dt.strptime(entry_dtime.strftime('%Y-%m-%d %H:%M'), '%Y-%m-%d %H:%M')
         # operator entered car Number
-        carNo = request.form["CarNumber"]
-
+        carNo = request.form.get('CarNumber', None)
+        #print(carNo, file=sys.stderr)
+        if carNo:
+        ##dont do anything if carNO is empty
         # Find active charge Id
         # Currently no active charge Id
-        activeCharge = Charge.query.filter(Charge.ch_active.is_(True)).first()
-        if (activeCharge is not None):
-            chid = activeCharge.charge_id
+            activeCharge = Charge.query.filter(Charge.ch_active.is_(True)).first()
+            if (activeCharge is not None):
+                chid = activeCharge.charge_id
+            else:
+                notActiveCharge = Charge.query.filter(Charge.ch_active.is_(False)).first()
+                if (notActiveCharge is not None):
+                    chid = notActiveCharge.charge_id
+
+            totalSlots, curEmprtySlots = getCurUtilization()
+            if( curEmprtySlots > 0 ) :
+                # create and push new token and generate token id
+                getToken = Token(charge_id=chid, vehicle_no=carNo, entry_date=entry_dtime, entry_operator_id=current_user.id)
+                db.session.add(getToken)
+                db.session.commit()
+
+                totalSlots, emptySlots = getCurUtilization()
+                #socketio.emit('PL_Message', { 'pl_empty_slots' : emptySlots, 'fourHourAvg': four_hour_avg, 'oneDayAvg': one_day_avg, 'twoDayAvg': two_day_avg})
+                socketio.emit('PL_Message', {'pl_empty_slots': emptySlots})
+
+                session['new_token_id'] = getToken.token_id
+                session['customer_entry_time'] = entry_dtime
+                session['operatoId'] = current_user.id
+                session['token_session'] = True
+                return redirect(url_for('client.token_display'))
+            else:
+                errorMsg = 'Parking Lot full !!'
+                return render_template('entry.html', headerTitle='Parking Lot - Entry for Customer', errorMessage = errorMsg)
         else:
-            notActiveCharge = Charge.query.filter(Charge.ch_active.is_(False)).first()
-            if (notActiveCharge is not None):
-                chid = notActiveCharge.charge_id
-
-        curEmprtySlots = getCurUtilization()
-        if( curEmprtySlots > 0 ) :
-            # create and push new token and generate token id
-            getToken = Token(charge_id=chid, vehicle_no=carNo, entry_date=entry_dtime, entry_operator_id=current_user.id)
-            db.session.add(getToken)
-            db.session.commit()
-            # print(new_token.token_id, file=sys.stderr)
-            #print(getToken.token_id, totalCarIn, file=sys.stderr)
-
-            emptySlots = getCurUtilization()
-            #four_hour_avg  = 30+emptySlots
-            #one_day_avg =  30+ emptySlots
-            #two_day_avg =  30+ emptySlots
-
-            #socketio.emit('PL_Message', { 'pl_empty_slots' : emptySlots, 'fourHourAvg': four_hour_avg, 'oneDayAvg': one_day_avg, 'twoDayAvg': two_day_avg})
-            socketio.emit('PL_Message', {'pl_empty_slots': emptySlots})
-
-            session['new_token_id'] = getToken.token_id
-            session['customer_entry_time'] = entry_dtime
-            session['operatoId'] = current_user.id
-            session['token_session'] = True
-            return redirect(url_for('client.token_display'))
-        else:
-            errorMsg = 'Parking Lot full !!'
+            errorMsg = 'Please enter valid car No !!'
             return render_template('entry.html', headerTitle='Parking Lot - Entry for Customer', errorMessage = errorMsg)
     else:
         return render_template('entry.html', headerTitle='Parking Lot - Entry for Customer')

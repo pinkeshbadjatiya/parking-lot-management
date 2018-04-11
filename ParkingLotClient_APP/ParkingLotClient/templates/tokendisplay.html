@@ -2,61 +2,66 @@
 {% block content %}
 
 
-<form>
+
 <div>
 
 <div class="line"></div>
 
-  <table>
-    <tr>
-      <td>
-        <span>ParkingLot Name</span>
-      </td>
-      <td>
-        <button type="button" class="btn btn-info">{{plName}}</button>
-      </td>
-    </tr>
-    <tr>
-      <td>
-        <span>ParkingLot Address</span>
-      </td>
-      <td>
-        <button type="button" class="btn btn-info">{{plAddress}}</button>
-      </td>
-    </tr>
-    <tr>
-      <td>
-        <span >Token id</span>
-      </td>
-      <td>
-        <button type="button" class="btn btn-info">{{tokenId}}</button>
-      </td>
-    </tr>
-    <tr>
-      <td>
-        <span>Entry Time</span>
-      </td>
-      <td>
-        <button type="button" class="btn btn-info">{{entryTime}}</button>
-      </td>
-    </tr>
-    <tr>
-      <td>
-        <span>Opeator Id</span>
-      </td>
-      <td>
-        <button type="button" class="btn btn-info">{{operatorId}}</button>
-      </td>
-    </tr>
-  </table>
+    <table border="2" cellpadding="3" cellspacing="1" align="center">
+      <tr>
+        <td style="text-align: center; font-size:24px; padding-left:20px; padding-right:20px">
+            <span>ParkingLot Name</span>
+        </td>
+        <td bgcolor="#5DBCD2" style="text-align: center; font-size:24px; padding-left:20px; padding-right:20px">
+            <span>{{plName}}</span>
+            <!--<button type="button" class="btn btn-info" id="empty_slot">{{pl_empty_slots}}</button>-->
+        </td>
+      </tr>
+      <tr>
+        <td style="text-align: center; font-size:24px; padding-left:20px; padding-right:20px">
+            <span>ParkingLot Address</span>
+        </td>
+        <td bgcolor="#5DBCD2" style="text-align: center; font-size:24px; padding-left:20px; padding-right:20px">
+            <span>{{plAddress}}</span>
+            <!--<button type="button" class="btn btn-info" id="empty_slot">{{pl_empty_slots}}</button>-->
+        </td>
+      </tr>
+      <tr>
+        <td style="text-align: center; font-size:24px; padding-left:20px; padding-right:20px">
+            <span>Token id</span>
+        </td>
+        <td bgcolor="#5DBCD2" style="text-align: center; font-size:24px; padding-left:20px; padding-right:20px">
+            <span>{{tokenId}}</span>
+            <!--<button type="button" class="btn btn-info" id="empty_slot">{{pl_empty_slots}}</button>-->
+        </td>
+      </tr>
+      <tr>
+        <td style="text-align: center; font-size:24px; padding-left:20px; padding-right:20px">
+            <span>Entry Time</span>
+        </td>
+        <td bgcolor="#5DBCD2" style="text-align: center; font-size:24px; padding-left:20px; padding-right:20px">
+            <span>{{entryTime}}</span>
+            <!--<button type="button" class="btn btn-info" id="empty_slot">{{pl_empty_slots}}</button>-->
+        </td>
+      </tr>
+      <tr>
+        <td style="text-align: center; font-size:24px; padding-left:20px; padding-right:20px">
+            <span>Operator Id</span>
+        </td>
+        <td bgcolor="#5DBCD2" style="text-align: center; font-size:24px; padding-left:20px; padding-right:20px">
+            <span>{{operatorId}}</span>
+            <!--<button type="button" class="btn btn-info" id="empty_slot">{{pl_empty_slots}}</button>-->
+        </td>
+      </tr>
+    </table>
 
-  <div class="input-group" style="margin-bottom:20px">
-      <a class="nav-link" style="width:100%" href="{{url_for('client.show_home')}}">
-        <button name="button" class="btn btn-primary btn-block">Print</button>
-      </a>
+    <div class="input-group" style="margin-bottom:20px">
+        <a class="nav-link" style="width:100%" href="{{url_for('client.show_home')}}">
+          <button name="button" class="btn btn-primary btn-block">Print</button>
+        </a>
+    </div>
+
   </div>
 
-  </div>
-  </form>
 
 {% endblock %}
