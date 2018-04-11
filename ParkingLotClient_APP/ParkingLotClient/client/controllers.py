@@ -13,16 +13,19 @@ import datetime
 from datetime import datetime as dt
 from datetime import timedelta
 
-from ParkingLotClient import app
+from ParkingLotClient import app, socketio
 from flask_login import login_required
 from flask import Flask, render_template, redirect, url_for, session
 
 from .models import Token, Charge, ParkingLot, HourlyUtil
+
 #from .models import User
 
 from flask import url_for
+from flask_login import current_user
 
 mod_client = Blueprint('client', __name__)
+
 
 def populateHourlyUtil():
     try:
@@ -95,24 +98,29 @@ def populateHourlyUtil():
     except Exception, e:
         print (e)
 
+def getCurUtilization():
+    activePL = ParkingLot.query.filter_by(pl_active = 't').first()
+    parkingLotCapacity = int(activePL.pl_capacity);
 
-@mod_client.route('/home', methods=['GET', 'POST'])
-def show_home():
-    return render_template('home.html', headerTitle='Parking Lot - Home')
+    #Getting number of current occupied slots and utilization percentage
+    currActiveTokens = Token.query.filter_by(exit_date = None).all()
+    emptySlots = parkingLotCapacity - len(currActiveTokens)
+    return emptySlots
 
+def computerAvgParkingLotRate():
+        activeCharge = Charge.query.filter(Charge.ch_active.is_(True)).first()
+        if (activeCharge is not None):
+            price_snapshot = activeCharge.price_snapshot
+        else:
+            inactiveCharge = Charge.query.filter(Charge.ch_active.is_(False)).first()
+            if (inactiveCharge is not None):
+                price_snapshot = inactiveCharge.price_snapshot
+        ls = price_snapshot.split('#')
+        snap = []
+        for i in ls:
+            snap.append(i.split(','))
 
-# @mod_client.route('/display', methods=['GET', 'POST'])
-def display_info(ls):
-
-    # ls[0] == 1(for entry), 2(for exit), 3(for synch)
-    if ls[0] == 1 or ls[0] == 2:
-        empty_slots = ls[1]
-
-    if ls[0] == 3:
-
-        snap = ls[1]
         now = dt.now()
-
         now_day = now.weekday()
         now_day = (now_day + 1) % 7
         now_hour = now.hour
@@ -123,28 +131,44 @@ def display_info(ls):
         two_day_avg = 0
 
         for i in range(now_hour, now_hour + 4):
-            four_hour_avg += snap[now_day][i]
-        four_hour_avg = float(four_hour_avg) / 4
+            #print( snap[now_day][i], file=sys.stderr)
+            four_hour_avg += float(snap[now_day][i%24])
+        four_hour_avg =  float(four_hour_avg) / 4
 
         # calculate average for one day
         for i in range(0, 24):
-            summ += snap[now_day][i]
+            summ += float(snap[now_day][i])
         one_day_avg = float(summ) / 24
 
         # calculate average for more than one day
         j = 1
-
         while j != 2:
             now_day = (now_day + 1) % 7
             for i in range(0, 24):
-                summ += snap[now_day][i]
-
+                summ += float(snap[now_day][i])
             j = j + 1
 
         two_day_avg = float(summ) / (24 * 2)
+        return int(four_hour_avg), int(one_day_avg), int(two_day_avg)
+
+
+@mod_client.route('/home', methods=['GET', 'POST'])
+@login_required
+def show_home():
+    return render_template('home.html', headerTitle='Parking Lot - Home')
+
+
+@mod_client.route('/ParkingLotDisplay', methods=['GET', 'POST'])
+#@login_required
+def display_info():
+    four_hour_avg, one_day_avg, two_day_avg = computerAvgParkingLotRate()
+    emptySlots = getCurUtilization()
+
+    return render_template('ParkingLotDisplay.html', headerTitle='Parking Lot', pl_empty_slots = emptySlots, fourHourAvg = int(four_hour_avg), oneDayAvg = int(one_day_avg), twoDayAvg = int(two_day_avg))
 
 
 @mod_client.route('/payment', methods=['GET', 'POST'])
+@login_required
 def payment_process():
 
     if(session['allow']):
@@ -218,16 +242,21 @@ def calc_price(entry_dtime, exit_dtime, price_snapshot):
 
 
 @mod_client.route('/exit', methods=['GET', 'POST'])
+@login_required
 def exit_processing():
 
     if request.method == 'POST':
 
         token_input = request.form["token_id"]
         pay_method = request.form["pay_method"]
+        token_object_exists = 0
 
         # Extract Token corresponding to queried token_id
-        token_object_exists = Token.query.filter_by(token_id=token_input).count()
-        token_object = Token.query.filter_by(token_id=token_input).first()
+        if token_input.isdigit():
+            token_object_exists = Token.query.filter_by(token_id=token_input).count()
+            token_object = Token.query.filter_by(token_id=token_input).first()
+
+
         if token_object_exists > 0:
             if token_object.exit_date is None:
 
@@ -246,7 +275,11 @@ def exit_processing():
                 token_object.computed_charge = final_price
                 token_object.pay_method = pay_method
                 token_object.exit_date = exit_dtime
+                token_object.exit_operator_id = current_user.id
                 db.session.commit()
+
+                emptySlots = getCurUtilization()
+                socketio.emit('PL_Message', {'pl_empty_slots': emptySlots})
 
                 session['pay_method'] = pay_method
                 session['final_price'] = final_price
@@ -257,34 +290,44 @@ def exit_processing():
                 return redirect(url_for('client.payment_process'))
 
             else:
-                return render_template('exit.html', headerTitle='Parking Lot - Exit', msg="Token already used", is_error="true")
+                return render_template('exit.html', headerTitle='Parking Lot - Exit', errorMsg="Token already used")
         else:
-            return render_template('exit.html', headerTitle='Parking Lot - Exit', msg="Invalid Token", is_error="true")
-
+            return render_template('exit.html', headerTitle='Parking Lot - Exit', errorMsg="Invalid Token")
     else:
-        return render_template('exit.html', headerTitle='Parking Lot - Exit', msg="", is_error="")
+        return render_template('exit.html', headerTitle='Parking Lot - Exit', errorMsg="")
 
 
-@mod_client.route('/tokenDisplay', methods=['GET', 'POST'])
+@mod_client.route('/tokendisplay', methods=['GET', 'POST'])
+@login_required
 def token_display():
     if(session['token_session']):
-        new_token_id = session['new_token_id']
+        token_id = session['new_token_id']
         session['new_token_id'] = ""
-
-        customer_entry_time = session['customer_entry_time']
+        entry_time = session['customer_entry_time']
         session['customer_entry_time'] = ""
         # print(customer_entry_time, file=sys.stderr)
+        opId = session['operatoId']
+        session['operatoId'] = ""
+
         session['token_session'] = False
-        return render_template('tokenDisplay.html', headerTitle='Parking Lot - Token for Customer', new_token_id=new_token_id, customer_entry_time=customer_entry_time)
+        activePL = ParkingLot.query.filter_by(pl_active = 't').first()
+
+        #if (activePL is not None):
+        pl_Name = activePL.pl_name
+        pl_Address = activePL.pl_address
+
+        return render_template('tokendisplay.html', headerTitle='Customer Token', tokenId=token_id, entryTime=entry_time, plName=pl_Name, plAddress=pl_Address, operatorId=opId )
     else:
-        return 'Token Generated'
+        return redirect(url_for('client.show_home'))
 
 
 @mod_client.route('/entry', methods=['GET', 'POST'])
+@login_required
 def entry_processing():
     if request.method == 'POST':
         # get the current time to push along with customer car no
         entry_dtime = dt.now()
+        entry_dtime = dt.strptime(entry_dtime.strftime('%Y-%m-%d %H:%M'), '%Y-%m-%d %H:%M')
         # operator entered car Number
         carNo = request.form["CarNumber"]
 
@@ -298,15 +341,30 @@ def entry_processing():
             if (notActiveCharge is not None):
                 chid = notActiveCharge.charge_id
 
-        # create and push new token and generate token id
-        getToken = Token(charge_id=chid, vehicle_no=carNo, entry_date=entry_dtime)
-        db.session.add(getToken)
-        db.session.commit()
-        # print(new_token.token_id, file=sys.stderr)
+        curEmprtySlots = getCurUtilization()
+        if( curEmprtySlots > 0 ) :
+            # create and push new token and generate token id
+            getToken = Token(charge_id=chid, vehicle_no=carNo, entry_date=entry_dtime, entry_operator_id=current_user.id)
+            db.session.add(getToken)
+            db.session.commit()
+            # print(new_token.token_id, file=sys.stderr)
+            #print(getToken.token_id, totalCarIn, file=sys.stderr)
 
-        session['new_token_id'] = getToken.token_id
-        session['customer_entry_time'] = entry_dtime
-        session['token_session'] = True
-        return redirect(url_for('client.token_display'))
+            emptySlots = getCurUtilization()
+            #four_hour_avg  = 30+emptySlots
+            #one_day_avg =  30+ emptySlots
+            #two_day_avg =  30+ emptySlots
+
+            #socketio.emit('PL_Message', { 'pl_empty_slots' : emptySlots, 'fourHourAvg': four_hour_avg, 'oneDayAvg': one_day_avg, 'twoDayAvg': two_day_avg})
+            socketio.emit('PL_Message', {'pl_empty_slots': emptySlots})
+
+            session['new_token_id'] = getToken.token_id
+            session['customer_entry_time'] = entry_dtime
+            session['operatoId'] = current_user.id
+            session['token_session'] = True
+            return redirect(url_for('client.token_display'))
+        else:
+            errorMsg = 'Parking Lot full !!'
+            return render_template('entry.html', headerTitle='Parking Lot - Entry for Customer', errorMessage = errorMsg)
     else:
         return render_template('entry.html', headerTitle='Parking Lot - Entry for Customer')

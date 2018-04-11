@@ -1,4 +1,3 @@
-from __future__ import print_function
 from flask import g, Blueprint, request, jsonify
 from flask_mail import Message
 from ParkingLotClient import db
@@ -18,16 +17,19 @@ import datetime
 from datetime import datetime as dt
 from datetime import date, timedelta
 
-from ParkingLotClient import app
+from ParkingLotClient import app, socketio
 from flask_login import login_required
 from flask import Flask, render_template, redirect, url_for, session
 
 from .models import UtilizationStage
-from ParkingLotClient.client.models import HourlyUtil, ParkingLot
+from ParkingLotClient.client.models import HourlyUtil, ParkingLot, Charge
+from ParkingLotClient.client.controllers import computerAvgParkingLotRate
 
 from flask import url_for
+from flask.ext.socketio import SocketIO, emit
 
 mod_networksync = Blueprint('networksync', __name__)
+#socketio = SocketIO(app)
 
 def computeDailyUtil():
     #Getting current parling lot id
@@ -69,12 +71,12 @@ def computeDailyUtil():
     db.session.add(dailyUtilEntry)
     db.session.commit()
 
-    
+
 def sendDailyUtils(compute_util=True):
-    
+
     if compute_util:
         computeDailyUtil()
- 
+
     remainingUtils = UtilizationStage.query.filter_by(is_sent = False).all()
     for remainingUtil in remainingUtils:
         server_hostname = app.config['PARKING_LOT_ADMIN_HOSTNAME']
@@ -83,12 +85,12 @@ def sendDailyUtils(compute_util=True):
         server_response = requests.post(server_hostname + '/networksync/registerdailyutil', json={'plID': remainingUtil.pl_id, 'utilDate': str(remainingUtil.util_date), 'utilPerHourStr': remainingUtil.util_per_hour, 'revPerHourStr': remainingUtil.rev_per_hour, 'avgUtil': remainingUtil.avg_util, 'totalRev': remainingUtil.total_rev})
 
         #On obtaining confirm code in HTTPResponse
-        print (server_response.text)
+        print server_response.text
         response = json.loads(server_response.text)
 
         #Error at the admin end
         if 'error' in response:
-            print ('ERROR (on inserting utilization at admin): ', response['error'])
+            print 'ERROR (on inserting utilization at admin): ', response['error']
 
         else:
             #Update current object's is_sent to True if the response came properly
@@ -111,3 +113,18 @@ def update_local_prices():
         return jsonify({'error': 'No PriceSnapshot given'})
 
     price_snapshot = data['price_snapshot']
+    current_parkinglot = ParkingLot.query.filter_by().first()
+
+    # Make the old active charges inactive and insert the new active charge
+    old_active_charges = Charge.query.filter_by(ch_active='t').update({Charge.ch_active: False})
+    #db.session.add(old_active_charges)
+    #db.session.commit()
+
+    new_charge = Charge(current_parkinglot.id, price_snapshot)
+    db.session.add(new_charge)
+    db.session.commit()
+    four_hour_avg, one_day_avg, two_day_avg = computerAvgParkingLotRate()
+
+    socketio.emit('Charge_Message', { 'fourHourAvg': four_hour_avg, 'oneDayAvg': one_day_avg, 'twoDayAvg': two_day_avg})
+
+    return jsonify({'message': 'ok'})

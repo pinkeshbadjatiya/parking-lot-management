@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% block content %}
+
+
+<form>
+<div>
+
+<div class="line"></div>
+
+  <table>
+    <tr>
+      <td>
+        <span>ParkingLot Name</span>
+      </td>
+      <td>
+        <button type="button" class="btn btn-info">{{plName}}</button>
+      </td>
+    </tr>
+    <tr>
+      <td>
+        <span>ParkingLot Address</span>
+      </td>
+      <td>
+        <button type="button" class="btn btn-info">{{plAddress}}</button>
+      </td>
+    </tr>
+    <tr>
+      <td>
+        <span >Token id</span>
+      </td>
+      <td>
+        <button type="button" class="btn btn-info">{{tokenId}}</button>
+      </td>
+    </tr>
+    <tr>
+      <td>
+        <span>Entry Time</span>
+      </td>
+      <td>
+        <button type="button" class="btn btn-info">{{entryTime}}</button>
+      </td>
+    </tr>
+    <tr>
+      <td>
+        <span>Opeator Id</span>
+      </td>
+      <td>
+        <button type="button" class="btn btn-info">{{operatorId}}</button>
+      </td>
+    </tr>
+  </table>
+
+  <div class="input-group" style="margin-bottom:20px">
+      <a class="nav-link" style="width:100%" href="{{url_for('client.show_home')}}">
+        <button name="button" class="btn btn-primary btn-block">Print</button>
+      </a>
+  </div>
+
+  </div>
+  </form>
+
+{% endblock %}

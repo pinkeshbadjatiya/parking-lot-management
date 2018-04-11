@@ -70,7 +70,7 @@ class Token(db.Model):
     __tablename__ = "token"
 
     token_id = db.Column(db.Integer, primary_key=True)
-    charge_id = db.Column(db.Integer, nullable=False)
+    charge_id = db.Column(db.Integer, db.ForeignKey('charge.charge_id'))
     vehicle_no = db.Column(db.String(200), nullable=False)
     computed_charge = db.Column(db.Float, nullable=True)
     pay_method = db.Column(db.String(200), nullable=True)
@@ -79,27 +79,28 @@ class Token(db.Model):
     entry_date = db.Column(db.DateTime, nullable=False)
     exit_date = db.Column(db.DateTime,nullable=True)
     #--------------
+    entry_operator_id = db.Column(db.String(50), nullable=False)
+    exit_operator_id = db.Column(db.String(50), nullable=True)
 
-    #def __init__(self, token_id, charge_id, vehicle_no, computed_charge, pay_method, entry_date, exit_date):
-    #    self.token_id = token_id
-    #    self.charge_id = charge_id
-    #    self.vehicle_no = vehicle_no
-    #    self.computed_charge = computed_charge
-    #    self.pay_method = pay_method
-    #    self.entry_date = entry_date
-    #    self.exit_date = exit_date
+    #def __init__(self, charge_id, vehicle_no, computed_charge, pay_method, entry_date, exit_date):
+        #self.token_id = token_id
+        #self.charge_id = charge_id
+        #self.vehicle_no = vehicle_no
+        #self.computed_charge = computed_charge
+        #self.pay_method = pay_method
+        #self.entry_date = entry_date
+        #self.exit_date = exit_date
 
 class Charge(db.Model):
     __tablename__ = "charge"
 
     charge_id = db.Column(db.Integer, primary_key=True)
-    pl_id = db.Column(db.Integer, nullable=False)
-    price_snapshot = db.Column(db.String(2500), nullable=False)
-
-    ch_active = db.Column(db.Boolean, default=False, nullable=False)
+    ch_active = db.Column(db.Boolean, default=True, nullable=False)
     update_date = db.Column(db.DateTime, default=db.func.current_timestamp(), nullable=False)
 
-    def __init__(self, charge_id, pl_id, price_snapshot):
-        self.charge_id = charge_id
+    pl_id = db.Column(db.Integer, db.ForeignKey('parkinglot.id'))
+    price_snapshot = db.Column(db.String(2500), nullable=False)
+
+    def __init__(self, pl_id, price_snapshot):
         self.pl_id = pl_id
         self.price_snapshot = price_snapshot
