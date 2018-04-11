@@ -40,7 +40,3 @@ Database commands:
     This will create migrations and update them on the server.
     NOTE: Do not keep the app running while running this command
 
-
-TODO:
-1. After inserting the parking lot, we need to add the default pricing for that parking lot
-
