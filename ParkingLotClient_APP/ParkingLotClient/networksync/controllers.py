@@ -18,7 +18,7 @@ from ParkingLotClient.client.controllers import computerAvgParkingLotRate
 
 
 mod_networksync = Blueprint('networksync', __name__)
-#socketio = SocketIO(app)
+# socketio = SocketIO(app)
 
 
 def computeDailyUtil():
@@ -61,6 +61,8 @@ def computeDailyUtil():
     db.session.add(dailyUtilEntry)
     db.session.commit()
 
+    print "SCHEDULER: Daily utilization computation done successfully"
+
 
 def sendDailyUtils(compute_util=True):
 
@@ -82,6 +84,7 @@ def sendDailyUtils(compute_util=True):
             print 'ERROR (on inserting utilization at admin): ', response['error']
 
         else:
+            print "SCHEDULER: Daily utilization sent successfully to %s" % (server_hostname)
             # Update current object's is_sent to True if the response came properly
             if server_response.status_code == 200:
                 remainingUtil.is_sent = True
@@ -91,7 +94,9 @@ def sendDailyUtils(compute_util=True):
 
 @mod_networksync.route('/getunsentutils', methods=['GET'])
 def sendUnsentUtils():
+    print "SCHEDULER: Unsent utils requested by Server"
     sendDailyUtils(compute_util=False)
+    print "SCHEDULER: Unsent utils requested finished for the Server"
     return jsonify({'message': 'ok'})
 
 
@@ -112,8 +117,9 @@ def update_local_prices():
     new_charge = Charge(current_parkinglot.id, price_snapshot)
     db.session.add(new_charge)
     db.session.commit()
-    four_hour_avg, one_day_avg, two_day_avg = computerAvgParkingLotRate()
+    print "SCHEDULER: Price Snapshot changed"
 
+    four_hour_avg, one_day_avg, two_day_avg = computerAvgParkingLotRate()
     socketio.emit('Charge_Message', {'fourHourAvg': four_hour_avg, 'oneDayAvg': one_day_avg, 'twoDayAvg': two_day_avg})
 
     return jsonify({'message': 'ok'})

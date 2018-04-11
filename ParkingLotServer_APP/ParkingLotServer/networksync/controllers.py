@@ -50,6 +50,7 @@ def push_price_updates(parklot_id=None):
 
             # if push is successful then make ch_sent=='t'
             if res.status_code == 200:
+                print "SCHEDULER: New Price Snapshot pushed to the client %s" % (client_hostname)
                 current_staging_charge.ch_sent = 't'
                 db.session.add(current_staging_charge)
                 db.session.commit()
@@ -63,8 +64,10 @@ def return_price_updates():
             'error': 'No ParkingLotID specified.'
         })
 
+    print "SCHEDULER: Price Update requested for client"
     parklot_id = data['parkinglot_id']
     push_price_updates(parklot_id=parklot_id)
+    print "SCHEDULER: Price Update Finished for client"
 
     return jsonify({
         'message': 'ok'
