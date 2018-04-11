@@ -1,6 +1,15 @@
 {% extends "base.html" %}
 {% block content %}
-<form method=post>
+<style>
+.charge_cell {
+        width: 50px;
+        padding: 0px;
+        text-align: center;
+}
+
+
+</style>
+<form method=get>
 	<div style="margin-bottom:20px">
 	<nav class="navbar navbar-expand-lg navbar-dark bg-primary">
 		<div class="collapse navbar-collapse" id="navbarSupportedContent">
@@ -19,9 +28,9 @@
 	<h5>View Price Snapshot for: </h5>
 	<div class="input-group" style="margin-bottom:20px">
 		<div class="input-group-prepend">
-			<label class="input-group-text" for="inputPLSelect">Parking Lot</label>
+			<label class="input-group-text" for="pl">Parking Lot</label>
 		</div>
-		<select class="custom-select" name="inputPLSelect" required>
+		<select class="custom-select" name="pl" required>
 		{% for item in parkinglotList %}
 			{% if item == spl %}
 				<option selected>{{item}}</option>
@@ -33,22 +42,32 @@
 	</div>
 
 	<div class="input-group" style="margin-bottom:20px">
-		<button name="button" class="btn btn-primary btn-block" type="submit" value="view_pricesnapshot">View PriceSnapshot</button>
+		<button class="btn btn-primary btn-block" type="submit">View PriceSnapshot</button>
 	</div>
+
+  </form>
 
 	{% if priceDataPresent %}
 	<div>
 		<h2>{{parkinglotname}}</h2>
 		<table id='price_table'>
+				<tr>
+                    {% for hour in hoursList  %}
+					    <th style="text-weight: bold;"> {{hour}} </th>
+					{% endfor %}
+				</tr>
 			{% for day in pricesnapshot %}
 				<tr>
-					<td> WeekDay {{loop.index}} </td>
+					<th> {{daysList[loop.index-1]}} </th>
 					{% for hour in day %}
 						<td class='charge_cell'> {{hour}} </td>
 					{% endfor %}
 				</tr>
 			{% endfor %}
 		</table>
+	    <div class="input-group" style="margin-bottom:20px">
+	    	<button name="button" class="btn btn-primary btn-block" type="submit" style="display:none;" id="updatePriceButton" onclick="submit_prices();">Update Prices</button>
+	    </div>
 	</div>
 	{% endif %}
 
@@ -58,13 +77,12 @@
 	</div>
 	{% endif %}
 
-
-
-  </form>
-
 	<script>
+        var count = 0;
+        var class_name = "thVal" + count;
 			$(function () {
 		    $(".charge_cell").dblclick(function (e) {
+                count += 1;
 		        e.stopPropagation();
 		        var currentEle = $(this);
 		        var value = $(this).html();
@@ -73,18 +91,37 @@
 		});
 
 		function updateVal(currentEle, value) {
-		    $(currentEle).html('<input class="thVal" type="text" value="' + value + '" />');
-		    $(".thVal").focus();
-		    $(".thVal").keyup(function (event) {
+            console.log(class_name);
+		    $(currentEle).html('<input class="' + class_name + '" type="text" style="width:100%;" value="' + value.trim() + '" />');
+		    $("." + class_name).focus();
+		    $("." + class_name).keyup(function (event) {
 		        if (event.keyCode == 13) {
-		            $(currentEle).html($(".thVal").val().trim());
+
+                    // Show the update price button if the value changed
+                    var value2 = $("." + class_name).val().trim();
+
+                    $(currentEle).html(value2);
+                    if (parseInt(value) != parseInt(value2)) {
+                        $("#updatePriceButton")[0].style.display = ""
+                    }
+
+                    //$("." + class_name).remove();
+                    return false;
 		        }
 		    });
 
 		    $(document).click(function () {
-		            $(currentEle).html($(".thVal").val().trim());
+		            //$(currentEle).html($("." + class_name).val().trim());
+                    //$("." + class_name).remove();
 		    });
+
 		}
+
+        function submit_prices() {
+            console.log("prices;;;;;");
+
+
+        }
 
   </script>
 {% endblock %}

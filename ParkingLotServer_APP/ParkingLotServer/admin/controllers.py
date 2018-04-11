@@ -22,6 +22,8 @@ mod_admin = Blueprint('admin', __name__)
 @login_required
 def view_update_prices():
     # Getting Parking Lot List from the DB through model and sending it to utilization page
+    days = ["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"]
+    hoursList = ["D \ H", "00", "01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23"]
     plList = []
     plListMap = {}
     plListRaw = ParkingLot.query.filter_by(pl_active='t').all()
@@ -30,40 +32,46 @@ def view_update_prices():
         plListMap[plListRawItem.pl_name] = plListRawItem.id
 
     headerTitle = 'Parking Lot - Price Snapshot'
-    if request.method == 'POST':
-        if request.form['button'] == 'view_pricesnapshot':
-            selected_pl = request.form['inputPLSelect']
+    if request.method == 'GET':
+        #if request.form['button'] == 'view_pricesnapshot':
+        selected_pl = request.args.get('pl')
+        #selected_pl = request.form['inputPLSelect']
 
-            # Check if parking lot is present
-            if selected_pl not in plListMap:
-                return render_template('viewprices.html',
-                                        headerTitle=headerTitle,
-                                        parkinglotList=plList,
-                                        priceDataPresent=False,
-                                        message="Invalid parking lot selected")
-
-            parklot_id = plListMap[selected_pl]
-            charge_obj = Charge.query.filter_by(pl_id=parklot_id, ch_active='t').first()
-            if not charge_obj:
-                return render_template('viewprices.html',
-                                        headerTitle=headerTitle,
-                                        parkinglotList=plList,
-                                        priceDataPresent=False,
-                                        message="No charge data available")
-
-            # Convert to lists
-            price_snapshot = charge_obj.price_snapshot.split("#")
-            for i, day in enumerate(price_snapshot):
-                price_snapshot[i] = price_snapshot[i].split(",")
-
+        # Check if parking lot is present
+        if selected_pl not in plListMap:
             return render_template('viewprices.html',
                                     headerTitle=headerTitle,
                                     parkinglotList=plList,
-                                    priceDataPresent='true',
-                                    parkinglotname=selected_pl,
-                                    pricesnapshot=price_snapshot)
+                                    daysList=days,
+                                    hoursList=hoursList,
+                                    priceDataPresent=False)
 
-    return render_template('viewprices.html', headerTitle=headerTitle, parkinglotList=plList, priceDataPresent=True)
+        parklot_id = plListMap[selected_pl]
+        charge_obj = Charge.query.filter_by(pl_id=parklot_id, ch_active='t').first()
+        if not charge_obj:
+            return render_template('viewprices.html',
+                                    headerTitle=headerTitle,
+                                    parkinglotList=plList,
+                                    daysList=days,
+                                    hoursList=hoursList,
+                                    priceDataPresent=False,
+                                    message="No charge data available")
+
+        # Convert to lists
+        price_snapshot = charge_obj.price_snapshot.split("#")
+        for i, day in enumerate(price_snapshot):
+            price_snapshot[i] = price_snapshot[i].split(",")
+
+        return render_template('viewprices.html',
+                                headerTitle=headerTitle,
+                                parkinglotList=plList,
+                                priceDataPresent='true',
+                                parkinglotname=selected_pl,
+                                daysList=days,
+                                hoursList=hoursList,
+                                pricesnapshot=price_snapshot)
+
+    return render_template('viewprices.html', headerTitle=headerTitle, parkinglotList=plList, daysList=days, hoursList=hoursList, priceDataPresent=True)
 
 
 def get_parking_lots():
