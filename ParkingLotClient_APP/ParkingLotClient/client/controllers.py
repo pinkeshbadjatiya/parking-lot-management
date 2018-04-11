@@ -167,9 +167,9 @@ def display_info():
     return render_template('ParkingLotDisplay.html', headerTitle='Parking Lot - Charges',pl_total_slots=totalSlots, pl_empty_slots=emptySlots, fourHourAvg = int(four_hour_avg), oneDayAvg = int(one_day_avg), twoDayAvg = int(two_day_avg))
 
 
-@mod_client.route('/payment', methods=['GET', 'POST'])
+@mod_client.route('/print_summary', methods=['GET', 'POST'])
 @login_required
-def payment_process():
+def print_summary():
 
     if(session['allow']):
 
@@ -187,7 +187,7 @@ def payment_process():
 
         session['allow'] = False
 
-        return render_template('payment.html', headerTitle='Parking Lot - Receipt for Customer', pay_method=pay_method, final_price=final_price, token_id=token_id, exit_time=exit_time)
+        return render_template('summary.html', headerTitle='Parking Lot - Receipt for Customer', pay_method=pay_method, final_price=final_price, token_id=token_id, exit_time=exit_time)
 
 
 def calc_for_date(start_dtime, end_dtime, snap):
@@ -240,6 +240,8 @@ def calc_price(entry_dtime, exit_dtime, price_snapshot):
 
     return summ
 
+def pay():
+    return True
 
 @mod_client.route('/exit', methods=['GET', 'POST'])
 @login_required
@@ -272,6 +274,10 @@ def exit_processing():
                 final_price = calc_price(entry_dtime, exit_dtime, price_snapshot)
                 final_price = float("{0:.2f}".format(final_price))
 
+                # Customer pays the amount
+                if not pay():
+                    return render_template('exit.html', headerTitle='Parking Lot - Exit', errorMsg="Payment Failed")
+
                 token_object.computed_charge = final_price
                 token_object.pay_method = pay_method
                 token_object.exit_date = exit_dtime
@@ -287,7 +293,7 @@ def exit_processing():
                 session['exit_time'] = exit_dtime.strftime('%Y-%m-%d %H:%M')
                 session['allow'] = True
 
-                return redirect(url_for('client.payment_process'))
+                return redirect(url_for('client.print_summary'))
 
             else:
                 return render_template('exit.html', headerTitle='Parking Lot - Exit', errorMsg="Token already used")

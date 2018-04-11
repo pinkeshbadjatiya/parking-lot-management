@@ -32,6 +32,15 @@ def view_update_prices():
         plListMap[plListRawItem.pl_name] = plListRawItem.id
 
     headerTitle = 'Parking Lot - Price Snapshot'
+    if request.method == 'POST':
+        # Update the new received price
+        price_snapshot = request.form.get("price_snapshot")
+        print price_snapshot
+
+        return jsonify({
+            'message': 'ok'
+            })
+
     if request.method == 'GET':
         #if request.form['button'] == 'view_pricesnapshot':
         selected_pl = request.args.get('pl')
@@ -165,7 +174,7 @@ def view_utilization():
                                     # prevDaysRev=daysRev)
 
     return render_template('utilization.html', headerTitle='Parking Lot - Utilization', parkinglotList=plList, chartDataPresent='')
-                
+
 
 @mod_admin.route('/dashboard', methods=['GET', 'POST'])
 @login_required
