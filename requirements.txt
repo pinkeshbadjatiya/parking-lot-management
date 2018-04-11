@@ -11,3 +11,4 @@ argon2_cffi==18.1.0
 gunicorn==19.7.1
 requests==2.18.4
 flask-login==0.4.1
+flask-socketio

@@ -2,7 +2,28 @@
 {% block content %}
 
 
+<div style="margin-bottom:20px">
+  <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav mr-auto">
+	<li class="nav-item active">
+	  <a class="nav-link" href="{{url_for('client.show_home')}}">Dashboard</a>
+	</li>
+	<li class="nav-item">
+	  <a class="nav-link" href="{{url_for('authentication.logout')}}">Log Out</a>
+	</li>
+      </ul>
+    </div>
+  </nav>
+</div>
+
 <form action ="{{ url_for('client.entry_processing') }}" method = "post">
+
+{% if errorMessage %}
+	<div class="alert alert-danger" role="alert">
+		{{errorMessage}}
+	</div>
+{% endif %}
 
   Car Number:<br/>
   <input type="text" name="CarNumber">
