@@ -1,12 +1,13 @@
 {% extends "base.html" %}
 {% block content %}
 
+
 <div style="margin-bottom:20px">
   <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
     <div class="collapse navbar-collapse" id="navbarSupportedContent">
       <ul class="navbar-nav mr-auto">
 	<li class="nav-item active">
-	  <a class="nav-link" href="{{url_for('client.show_home')}}">Dashboard</a>
+	  <a class="nav-link" href="{{url_for('client.show_home')}}">Home</a>
 	</li>
 	<li class="nav-item">
 	  <a class="nav-link" href="{{url_for('authentication.logout')}}">Log Out</a>
@@ -16,25 +17,57 @@
   </nav>
 </div>
 
+<div>
 
-<h2>Payment Successful</h2>
-<p>
-  <b>Token id : {{token_id}}</b>
-  <br/>
-  <b>Amount : {{final_price}}</b>
-  <br/>
-  <b>Paid by: {{pay_method}}</b>
-  <br/><br/>
-  <em>{{exit_time}}</em>
-</p>
+<div class="line"></div>
+
+    <caption  align="center">Payment Successful</caption>
+    <table border="2" cellpadding="3" cellspacing="1" align="center">
+      <tr>
+        <td style="text-align: center; font-size:24px; padding-left:20px; padding-right:20px">
+            <span>Token id</span>
+        </td>
+        <td bgcolor="#5DBCD2" style="text-align: center; font-size:24px; padding-left:20px; padding-right:20px">
+            <span>{{token_id}}</span>
+            <!--<button type="button" class="btn btn-info" id="empty_slot">{{pl_empty_slots}}</button>-->
+        </td>
+      </tr>
+      <tr>
+        <td style="text-align: center; font-size:24px; padding-left:20px; padding-right:20px">
+            <span>Amount</span>
+        </td>
+        <td bgcolor="#5DBCD2" style="text-align: center; font-size:24px; padding-left:20px; padding-right:20px">
+            <span>{{final_price}}</span>
+            <!--<button type="button" class="btn btn-info" id="empty_slot">{{pl_empty_slots}}</button>-->
+        </td>
+      </tr>
+      <tr>
+        <td style="text-align: center; font-size:24px; padding-left:20px; padding-right:20px">
+            <span>Paid by</span>
+        </td>
+        <td bgcolor="#5DBCD2" style="text-align: center; font-size:24px; padding-left:20px; padding-right:20px">
+            <span>{{pay_method}}</span>
+            <!--<button type="button" class="btn btn-info" id="empty_slot">{{pl_empty_slots}}</button>-->
+        </td>
+      </tr>
+      <tr>
+        <td style="text-align: center; font-size:24px; padding-left:20px; padding-right:20px">
+            <span>Exit Time</span>
+        </td>
+        <td bgcolor="#5DBCD2" style="text-align: center; font-size:24px; padding-left:20px; padding-right:20px">
+            <span>{{exit_time}}</span>
+            <!--<button type="button" class="btn btn-info" id="empty_slot">{{pl_empty_slots}}</button>-->
+        </td>
+      </tr>
+    </table>
+
+    <div class="input-group" style="margin-bottom:20px">
+        <a class="nav-link" style="width:100%" href="{{url_for('client.show_home')}}">
+          <button name="button" class="btn btn-primary btn-block">Print</button>
+        </a>
+    </div>
 
 
-<ul class="navbar-nav mr-auto">
-  <li class="nav-item active">
-    <a class="btn btn-primary btn-block" href="{{url_for('client.show_home')}}">Print</a>
-  </li>
-</ul>
-
-
+  </div>
 
 {% endblock %}

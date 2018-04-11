@@ -8,37 +8,50 @@
 
   <div class="line"></div>
 
-    <table>
+    <table border="2" cellpadding="3" cellspacing="1" align="center">
       <tr>
-        <td>
+        <td style="text-align: center; font-size:72px; padding-left:20px; padding-right:20px">
+            <span>Total Capacity</span>
+        </td>
+        <td bgcolor="#5DBCD2" style="text-align: center; font-size:72px; padding-left:20px; padding-right:20px">
+            <span id="total_slots">{{pl_total_slots}}</span>
+            <!--<button type="button" class="btn btn-info" id="empty_slot">{{pl_empty_slots}}</button>-->
+        </td>
+      </tr>
+      <tr>
+        <td style="text-align: center; font-size:72px; padding-left:20px; padding-right:20px">
             <span>Empty slots</span>
         </td>
-        <td>
-            <button type="button" class="btn btn-info" id="empty_slot">{{pl_empty_slots}}</button>
+        <td bgcolor="#5DBCD2" style="text-align: center; font-size:72px; padding-left:20px; padding-right:20px">
+            <span id="empty_slot">{{pl_empty_slots}}</span>
+            <!--<button type="button" class="btn btn-info" id="empty_slot">{{pl_empty_slots}}</button>-->
         </td>
       </tr>
       <tr>
-        <td>
+        <td style="text-align: center; font-size:72px; padding-left:20px; padding-right:20px">
             <span>Current average Price</span>
         </td>
-        <td>
-          <button type="button" class="btn btn-info" id="hourlyavgprice">{{fourHourAvg}}</button>
+        <td bgcolor="#5DBCD2" style="text-align: center; font-size:72px; padding-left:20px; padding-right:20px">
+            <span id="hourlyavgprice">{{fourHourAvg}}</span>
+            <!--<button type="button" class="btn btn-info" id="empty_slot">{{pl_empty_slots}}</button>-->
         </td>
       </tr>
       <tr>
-        <td>
+        <td style="text-align: center; font-size:72px; padding-left:20px; padding-right:20px">
             <span>Daily average price</span>
         </td>
-        <td>
-            <button type="button" class="btn btn-info" id="dailyavgprice">{{oneDayAvg}}</button>
+        <td bgcolor="#5DBCD2" style="text-align: center; font-size:72px; padding-left:20px; padding-right:20px">
+            <span id="dailyavgprice">{{oneDayAvg}}</span>
+            <!--<button type="button" class="btn btn-info" id="empty_slot">{{pl_empty_slots}}</button>-->
         </td>
       </tr>
       <tr>
-        <td>
+        <td style="text-align: center; font-size:72px; padding-left:20px; padding-right:20px">
             <span>Weekly average price</span>
         </td>
-        <td>
-            <button type="button" class="btn btn-info" id="weeklyavgprice">{{twoDayAvg}}</button>
+        <td bgcolor="#5DBCD2" style="text-align: center; font-size:72px; padding-left:20px; padding-right:20px">
+            <span id="weeklyavgprice">{{twoDayAvg}}</span>
+            <!--<button type="button" class="btn btn-info" id="empty_slot">{{pl_empty_slots}}</button>-->
         </td>
       </tr>
     </table>
@@ -64,26 +77,6 @@
           document.getElementById("dailyavgprice").innerHTML = data.oneDayAvg;
           document.getElementById("weeklyavgprice").innerHTML = data.twoDayAvg;
     });
-
-    function refresh() {
-      document.location.reload(true );
-    }
-
-
-   function checkForRefresh() {
-       var time = new Date().getTime();
-       time.setHours(01);
-       time.setMinutes(0);
-       time.setSeconds(0);
-       var currentTime = new Date().getTime();
-       if(currentTime>time){
-            console.error("Time is in the Past");
-            return false;
-      }
-      setTimeout(refresh, time-currentTime);
-      return true;
-    }
-
 
   </script>
 
