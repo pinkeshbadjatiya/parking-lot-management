@@ -50,13 +50,11 @@ def push_price_updates(parklot_id=None):
         else:
             # Charge is already staged but not sent. Send it now.
             client_hostname = current_app.config['PARKING_LOT_CLIENT_HOSTNAMES'][active_charge.pl_id]
-            print client_hostname
 
             # make a POST request
             res = requests.post(client_hostname + '/networksync/updatePrices', json={
                 'price_snapshot': current_staging_charge.price_snapshot
             })
-            print 'response from server:', res.text
             response = json.loads(res.text)
             if 'error' in response:
                 print 'ERROR (on updating prices at client)', response['error']
