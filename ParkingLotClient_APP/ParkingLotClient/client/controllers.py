@@ -164,7 +164,7 @@ def display_info():
     four_hour_avg, one_day_avg, two_day_avg = computerAvgParkingLotRate()
     totalSlots, emptySlots = getCurUtilization()
 
-    return render_template('ParkingLotDisplay.html', headerTitle='Parking Lot - Charges',pl_total_slots=totalSlots, pl_empty_slots=emptySlots, fourHourAvg = int(four_hour_avg), oneDayAvg = int(one_day_avg), twoDayAvg = int(two_day_avg))
+    return render_template('ParkingLotDisplay.html', headerTitle='Parking Lot - Info',pl_total_slots=totalSlots, pl_empty_slots=emptySlots, fourHourAvg = int(four_hour_avg), oneDayAvg = int(one_day_avg), twoDayAvg = int(two_day_avg))
 
 
 @mod_client.route('/payment', methods=['GET', 'POST'])

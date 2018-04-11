@@ -1,11 +1,56 @@
 {% extends "base.html" %}
 {% block content %}
   <form>
-	<div>
-	<a class="btn btn-primary btn-block" href="{{url_for('admin.configure_parking_lots')}}">Configure Parking Lots</a>
+    <div style="margin-bottom:20px">
+        <h2>Welcome, {{username}}</h2>
+    </div>
+    
+	<div style="margin-bottom:20px">
+	<a class="btn btn-primary btn-block" href="{{url_for('admin.configure_parking_lots')}}">Add Parking Lots</a>
 	<a class="btn btn-primary btn-block" href="{{url_for('admin.view_utilization')}}">View Utilization</a>
 	<a class="btn btn-primary btn-block" href="{{url_for('admin.view_update_prices')}}">View / Update Prices</a>
 	<a class="btn btn-primary btn-block" href="{{url_for('authentication.logout')}}">Log Out</a>
 	</div>
+    
+    <div id="dashplot" style="margin-bottom:20px"><!-- Plotly chart will be drawn inside this DIV --></div>
+	<script>
+		var trace1 = {
+			x: ['Parking Lot 1', 'Parking Lot 2', 'Parking Lot 3', 'Parking Lot 4'],
+			y: [75, 80, 65, 90],
+			name: 'Average Utilization',
+			type: 'bar'
+		};
+
+		var trace2 = {
+			x: ['Parking Lot 1', 'Parking Lot 2', 'Parking Lot 3', 'Parking Lot 4'],
+			y: [50000, 60000, 50000, 65000],
+			name: 'Total Revenue',
+			yaxis: 'y2',
+			type: 'line'
+		};
+
+		var data = [trace1, trace2];
+
+		var layout = {
+			//barmode: 'group',
+			//width: 500,
+			height: 300,
+			title: 'Overall Average Utilization and Total Revenue', 
+			yaxis: {title: 'Average Utilization',
+			titlefont: {color: 'rgb(31, 120, 180)'}, 
+			tickfont: {color: 'rgb(31, 120, 180)'},
+			}, 
+			yaxis2: {
+			title: 'Total Revenue',
+			titlefont: {color: 'rgb(255, 126, 11)'},
+			tickfont: {color: 'rgb(255, 126, 11)'}, 
+			overlaying: 'y', 
+			side: 'right'
+			},
+			showlegend:false
+		};
+
+		Plotly.newPlot('dashplot', data, layout);
+	</script>
   </form>
 {% endblock %}

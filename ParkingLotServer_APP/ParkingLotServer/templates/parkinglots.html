@@ -16,7 +16,7 @@
 	</div>  
 	<div class="container">
 	  <div id="table" class="table-editable">
-	    <table id="parkinglots" class="table">
+	    <table id="parkinglots" class="table" align="center">
 	      <tr>
 		<th>Name</th>
 		<th>Address</th>
@@ -39,9 +39,9 @@
 		<td>{{item[3]}}</td>
 		<input type="hidden" name="id" value="{{item[4]}}"></input>
 
-		<td>
+		<!--<td>
 		  <button name="button" class="btn btn-primary btn-block" type="submit" value="delete_pl">Delete</button>
-		</td>
+		</td>-->
 		</form>		      	
 		</tr>
 		{% endfor %}
@@ -49,7 +49,9 @@
 	    </table>
 	  </div>
 	  
-	  <button id="add" class="btn btn-primary">Add</button>
+      <div class="input-group" style="margin-bottom:20px">
+		<button id="add" class="btn btn-primary btn-block">Add Parking Lot</button>
+	  </div>
 	</div>
 	
 

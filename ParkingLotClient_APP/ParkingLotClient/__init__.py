@@ -37,7 +37,7 @@ from client.models import ParkingLot
 
 @login_manager.user_loader
 def load_user(user_id):
-    print user_id
+    #print user_id
     return Users.query.filter(Users.id == int(user_id)).first()
 
 
