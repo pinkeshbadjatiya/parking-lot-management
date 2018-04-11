@@ -22,7 +22,7 @@ mod_admin = Blueprint('admin', __name__)
 @login_required
 def view_update_prices():
     # Getting Parking Lot List from the DB through model and sending it to utilization page
-    days = ["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"]
+    days = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"]
     hoursList = ["D \ H", "00", "01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23"]
     plList = []
     plListMap = {}
@@ -32,6 +32,15 @@ def view_update_prices():
         plListMap[plListRawItem.pl_name] = plListRawItem.id
 
     headerTitle = 'Parking Lot - Price Snapshot'
+    if request.method == 'POST':
+        # Update the new received price
+        price_snapshot = request.form.get("price_snapshot")
+        print price_snapshot
+
+        return jsonify({
+            'message': 'ok'
+            })
+
     if request.method == 'GET':
         #if request.form['button'] == 'view_pricesnapshot':
         selected_pl = request.args.get('pl')
@@ -99,6 +108,14 @@ def configure_parking_lots():
             parking_lot = ParkingLot(request.form['pl_name'], request.form['pl_address'], request.form['pl_capacity'], request.form['pl_price'], True)
             db.session.add(parking_lot)
             db.session.commit()
+
+            # Insert default price snapshot
+            default_price = request.form['pl_price'].strip()
+            default_price_snapshot = "#".join([",".join([default_price] * 24)] * 7)
+            default_charge = Charge(parking_lot.id, default_price_snapshot, True)
+            db.session.add(default_charge)
+            db.session.commit()
+
             # if parking_lot.id != 1 :
             #     flash('Error in adding parking lot')
             print "add request"
@@ -165,7 +182,7 @@ def view_utilization():
                                     # prevDaysRev=daysRev)
 
     return render_template('utilization.html', headerTitle='Parking Lot - Utilization', parkinglotList=plList, chartDataPresent='')
-                
+
 
 @mod_admin.route('/dashboard', methods=['GET', 'POST'])
 @login_required

@@ -85,7 +85,6 @@ def sendDailyUtils(compute_util=True):
         server_response = requests.post(server_hostname + '/networksync/registerdailyutil', json={'plID': remainingUtil.pl_id, 'utilDate': str(remainingUtil.util_date), 'utilPerHourStr': remainingUtil.util_per_hour, 'revPerHourStr': remainingUtil.rev_per_hour, 'avgUtil': remainingUtil.avg_util, 'totalRev': remainingUtil.total_rev})
 
         #On obtaining confirm code in HTTPResponse
-        print server_response.text
         response = json.loads(server_response.text)
 
         #Error at the admin end
