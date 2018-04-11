@@ -1,19 +1,13 @@
-from flask import g, Blueprint, request, jsonify
-from flask_mail import Message
-
 import arrow
 import jwt
-from passlib.hash import argon2
-
 import datetime
-from datetime import timedelta
+from passlib.hash import argon2
 from sqlalchemy import and_
-from ParkingLotServer import app, db
 from flask_login import login_required
-from flask import Flask, render_template, redirect, flash
+from flask import Flask, render_template, redirect, flash, Blueprint, request, jsonify, url_for
+from ParkingLotServer import app, db
 from .models import ParkingLot, Utilization, Charge
 
-from flask import url_for
 
 mod_admin = Blueprint('admin', __name__)
 
@@ -145,13 +139,13 @@ def view_utilization():
             selected_date_year = selected_date[0:selected_date.find('-')]
             selDate = datetime.date(int(selected_date_year), int(selected_date_month), int(selected_date_day))
 
-            selDateM1 = selDate - timedelta(days=1)
-            selDateM2 = selDate - timedelta(days=2)
+            selDateM1 = selDate - datetime.timedelta(days=1)
+            selDateM2 = selDate - datetime.timedelta(days=2)
 
             selDateStats = Utilization.query.filter(and_(Utilization.pl_id == parklot_id, Utilization.util_date == str(selDate))).first()
             if(selDateStats is None):
                 return render_template('utilization.html',
-                                       headerTitle='Parking Lot - Utilization',                                  parkinglotList = plList, 
+                                       headerTitle='Parking Lot - Utilization',                                  parkinglotList = plList,
                                        chartDataPresent = 'no',
                                        sdate = selected_date,
                                        spl = selected_pl)

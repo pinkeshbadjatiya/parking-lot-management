@@ -1,24 +1,14 @@
-from flask import g, Blueprint, request, jsonify, current_app
-from flask_mail import Message
-
-import arrow
-import jwt
-from passlib.hash import argon2
-
-from flask import request
+import requests
+import json
 from sqlalchemy import and_
-
+from flask import g, Blueprint, request, jsonify, current_app, Flask, render_template, redirect, flash, url_for
 from flask_login import login_required
-from flask import Flask, render_template, redirect, flash
 from .models import StagingPriceUpdates
 from ParkingLotServer.admin.models import Charge, ParkingLot, Utilization
 from ParkingLotServer import app, db
-import requests, json
 
-from flask import url_for
 
 mod_networksync = Blueprint('networksync', __name__)
-
 
 
 def push_price_updates(parklot_id=None):
@@ -42,7 +32,6 @@ def push_price_updates(parklot_id=None):
             current_staging_charge = staged_snapshot
             db.session.add(staged_snapshot)
             db.session.commit()
-
 
         if current_staging_charge.ch_sent:
             # Charge was staged and already sent. Just skip

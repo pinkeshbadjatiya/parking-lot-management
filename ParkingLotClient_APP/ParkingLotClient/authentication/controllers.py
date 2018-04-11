@@ -1,32 +1,18 @@
-from flask import g, Blueprint, request, jsonify
-from flask_mail import Message
-
-import arrow
-import jwt
-from passlib.hash import argon2
-
+from flask import url_for, render_template, redirect, flash, g, Blueprint, request, jsonify
+from flask_login import login_required, logout_user, login_user, current_user
 from ParkingLotClient import app, db
-from flask_login import login_required
 from .models import Users
 
-from flask import url_for, render_template, redirect, flash
 
-from flask_login import logout_user, login_user, current_user
 mod_auth = Blueprint('authentication', __name__)
 
-#@mod_auth.route('/', methods=['GET'])
-#@login_required
-#def home():
-#    print g.user
-#    print current_user
-#    return "WOW!"
 
 @mod_auth.route('/login', methods=['GET','POST'])
 def login():
     errorMsg = ''
     if request.method == 'POST':
-	email = request.form['email']
-	password = request.form['password']
+        email = request.form['email']
+        password = request.form['password']
         user = Users.query.filter_by(email=email).first()
         if user is not None and user.authenticate(password):
             user.authenticated = True
@@ -34,14 +20,13 @@ def login():
             db.session.commit()
             login_user(user)
             flash('Thanks for logging in, {}'.format(current_user.email))
-    	    return redirect(url_for('client.show_home', headerTitle='Parking Lot System - Dashboard'))
+            return redirect(url_for('client.show_home', headerTitle='Parking Lot System - Dashboard'))
         else:
-            #flash('ERROR! Incorrect login credentials.', 'error')
             errorMsg = 'Invalid Login! Try Again.'
-    return render_template('login.html' ,headerTitle='Parking Lot System - Login', errorMessage = errorMsg)
+    return render_template('login.html', headerTitle='Parking Lot System - Login', errorMessage=errorMsg)
 
 
-@mod_auth.route('/register' , methods=['GET','POST'])
+@mod_auth.route('/register', methods=['GET', 'POST'])
 def register():
     if request.method == 'GET':
         return render_template('register.html')

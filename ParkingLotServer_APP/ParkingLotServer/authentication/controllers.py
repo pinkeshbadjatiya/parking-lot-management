@@ -1,26 +1,15 @@
-from flask import g, Blueprint, request, jsonify
-from flask_mail import Message
-
 import arrow
 import jwt
 from passlib.hash import argon2
-
+from flask import url_for, render_template, redirect, flash, g, Blueprint, request, jsonify
+from flask_login import logout_user, login_user, current_user, login_required
 from ParkingLotServer import app, db
-from flask_login import login_required
 from .models import Users
 
-from flask import url_for, render_template, redirect, flash
-
-from flask_login import logout_user, login_user, current_user
 mod_auth = Blueprint('authentication', __name__)
 
-#@mod_auth.route('/', methods=['GET'])
-#@login_required
-#def home():
-#    print current_user
-#    return "WOW! Welcome %s." %(current_user.email)
 
-@mod_auth.route('/login', methods=['GET','POST'])
+@mod_auth.route('/login', methods=['GET', 'POST'])
 def login():
     errorMsg = ''
     if request.method == 'POST':
@@ -33,14 +22,13 @@ def login():
             db.session.commit()
             login_user(user)
             flash('Thanks for logging in, {}'.format(current_user.email))
-            #return redirect(url_for('authentication.home'))
             return redirect(url_for('admin.show_dashboard', headerTitle='Parking Lot Administration - Dashboard'))
         else:
-            #flash('ERROR! Incorrect login credentials.', 'error')
             errorMsg = 'Invalid Login! Try Again.'
-    return render_template('login.html', headerTitle='Parking Lot Administration - Login', errorMessage = errorMsg)
+    return render_template('login.html', headerTitle='Parking Lot Administration - Login', errorMessage=errorMsg)
 
-@mod_auth.route('/register' , methods=['GET','POST'])
+
+@mod_auth.route('/register', methods=['GET', 'POST'])
 def register():
     if request.method == 'GET':
         return render_template('register.html', headerTitle='Parking Lot Administration - Register')
@@ -51,7 +39,7 @@ def register():
     return redirect(url_for('authentication.login', headerTitle='Parking Lot Administration - Login'))
 
 
-@mod_auth.route('/logout', methods=['GET','POST'])
+@mod_auth.route('/logout', methods=['GET', 'POST'])
 @login_required
 def logout():
     user = current_user

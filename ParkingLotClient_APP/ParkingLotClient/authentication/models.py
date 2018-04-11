@@ -11,7 +11,6 @@ class Users(db.Model):
     last_name = db.Column(db.String(255), nullable=False)
     authenticated = db.Column(db.Boolean, default=False)
 
-
     def __init__(self, first_name, last_name, email, password):
         self.first_name = first_name
         self.last_name = last_name

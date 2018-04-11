@@ -1,5 +1,6 @@
 from ParkingLotClient import db
 
+
 class UtilizationStage(db.Model):
     __tablename__ = "utilization_stage"
 

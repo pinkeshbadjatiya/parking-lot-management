@@ -1,6 +1,7 @@
 from ParkingLotClient import db
 from passlib.hash import argon2
 
+
 class Users(db.Model):
 
     __tablename__ = "user"
@@ -66,6 +67,7 @@ class ParkingLot(db.Model):
         self.pl_default_price = pl_default_price
         self.pl_active = pl_active
 
+
 class Token(db.Model):
     __tablename__ = "token"
 
@@ -75,10 +77,8 @@ class Token(db.Model):
     computed_charge = db.Column(db.Float, nullable=True)
     pay_method = db.Column(db.String(200), nullable=True)
 
-    #unsure about the data type below
     entry_date = db.Column(db.DateTime, nullable=False)
     exit_date = db.Column(db.DateTime,nullable=True)
-    #--------------
     entry_operator_id = db.Column(db.String(50), nullable=False)
     exit_operator_id = db.Column(db.String(50), nullable=True)
 
@@ -90,6 +90,7 @@ class Token(db.Model):
         #self.pay_method = pay_method
         #self.entry_date = entry_date
         #self.exit_date = exit_date
+
 
 class Charge(db.Model):
     __tablename__ = "charge"

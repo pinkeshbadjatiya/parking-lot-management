@@ -1,6 +1,7 @@
 from ParkingLotServer import db
 from passlib.hash import argon2
 
+
 class Users(db.Model):
 
     __tablename__ = "user"
@@ -28,6 +29,7 @@ class Users(db.Model):
         self.save()
         return True
 
+
 class ParkingLot(db.Model):
 
     __tablename__ = "parkinglot"
@@ -45,6 +47,7 @@ class ParkingLot(db.Model):
         self.pl_capacity = pl_capacity
         self.pl_default_price = pl_default_price
         self.pl_active = pl_active
+
 
 class Utilization(db.Model):
 
