@@ -11,6 +11,7 @@ from sqlalchemy import and_, func, between
 
 import datetime
 from datetime import datetime as dt
+from datetime import timedelta
 
 from ParkingLotClient import app
 from flask_login import login_required
@@ -23,7 +24,7 @@ from flask import url_for
 
 mod_client = Blueprint('client', __name__)
 
-def populateHourlyUtil(): #Write code for 23 to 00 of last day
+def populateHourlyUtil():
     try:
         #Getting current date and current hour
         currDT = str(dt.now())
@@ -40,29 +41,58 @@ def populateHourlyUtil(): #Write code for 23 to 00 of last day
         currUtil = parkingLotCapacity - len(currActiveTokens)
         currUtilPercent = (currUtil * 100) / parkingLotCapacity
 
-        #Getting exit transactions of the last hour
-        lastHourTransactions = Token.query.filter(between(Token.exit_date, func.to_date(currDate + " " + str(currHourInt-1) + ":00", "YYYY-MM-DD HH24:MI"), func.to_date(currDate + " " + str(currHourInt-1) + ":59", "YYYY-MM-DD HH24:MI"))).all()
+        if(currHourInt == 0):
+            prevDT = str(dt.now() - timedelta(days=1))
+            prevDate = prevDT[0:prevDT.find(' ')]
+            
+            #Getting exit transactions of the last hour of the previous day
+            lastHourTransactions = Token.query.filter(between(Token.exit_date, func.to_date(prevDate + " 23:00", "YYYY-MM-DD HH24:MI"), func.to_date(prevDate + " 23:59", "YYYY-MM-DD HH24:MI"))).all()
 
-        #Getting revenue collected till start of the last hour
-        prevRev = 0.0
-        if(currHourInt >= 2):
-            lastlastHourUtil = HourlyUtil.query.filter(and_(HourlyUtil.util_date == func.to_date(currDate, "YYYY-MM-DD"), HourlyUtil.util_hour == (currHourInt-2))).first()
+            #Getting revenue collected till start of the last hour
+            prevRev = 0.0
+            
+            lastlastHourUtil = HourlyUtil.query.filter(and_(HourlyUtil.util_date == func.to_date(prevDate, "YYYY-MM-DD"), HourlyUtil.util_hour == 22)).first()
             if(lastlastHourUtil is None):
                 prevRev = 0.0
             else:
                 prevRev = float(lastlastHourUtil.rev)
 
-        #Getting revenue collected in the last hour
-        currRev = 0.0
-        for lastHourTransaction in lastHourTransactions:
-            currRev = currRev + float(lastHourTransaction.computed_charge)
+            #Getting revenue collected in the last hour
+            currRev = 0.0
+            for lastHourTransaction in lastHourTransactions:
+                currRev = currRev + float(lastHourTransaction.computed_charge)
+            
+            #Computing cumulative revenue and storing as a new row in the Hourly Util table
+            currCumuRev = currRev + prevRev
+            hourlyUtilEntry = HourlyUtil(prevDate, 23, currUtilPercent, currCumuRev)
+            db.session.add(hourlyUtilEntry)
+            db.session.commit()
+        else:
+            
+            #Getting exit transactions of the last hour
+            lastHourTransactions = Token.query.filter(between(Token.exit_date, func.to_date(currDate + " " + str(currHourInt-1) + ":00", "YYYY-MM-DD HH24:MI"), func.to_date(currDate + " " + str(currHourInt-1) + ":59", "YYYY-MM-DD HH24:MI"))).all()
 
-        #Computing cumulative revenue and storing as a new row in the Hourly Util table
-        currCumuRev = currRev + prevRev
-        hourlyUtilEntry = HourlyUtil(currDate, currHour, currUtilPercent, currCumuRev)
-        db.session.add(hourlyUtilEntry)
-        db.session.commit()
-    except Exception as e:
+            #Getting revenue collected till start of the last hour
+            prevRev = 0.0
+            if(currHourInt >= 2):
+                lastlastHourUtil = HourlyUtil.query.filter(and_(HourlyUtil.util_date == func.to_date(currDate, "YYYY-MM-DD"), HourlyUtil.util_hour == (currHourInt-2))).first()
+                if(lastlastHourUtil is None):
+                    prevRev = 0.0
+                else:
+                    prevRev = float(lastlastHourUtil.rev)
+
+            #Getting revenue collected in the last hour
+            currRev = 0.0
+            for lastHourTransaction in lastHourTransactions:
+                currRev = currRev + float(lastHourTransaction.computed_charge)
+
+            #Computing cumulative revenue and storing as a new row in the Hourly Util table
+            currCumuRev = currRev + prevRev
+            hourlyUtilEntry = HourlyUtil(currDate, currHour, currUtilPercent, currCumuRev)
+            db.session.add(hourlyUtilEntry)
+            db.session.commit()
+            
+    except Exception, e:
         print (e)
 
 
