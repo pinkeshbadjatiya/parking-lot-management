@@ -96,6 +96,12 @@
                     // Show the update price button if the value changed
                     var value2 = $("." + class_name).val().trim();
 
+                    if (isNaN(value2)) {
+                            // Not a number
+                            alert("Entered value is not a number");
+                            return false;
+                    }
+
                     $(currentEle).html(value2);
                     if (parseInt(value) != parseInt(value2)) {
                         $("#updatePriceButton")[0].style.display = ""
