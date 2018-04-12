@@ -44,11 +44,11 @@ def load_user(user_id):
 def init_client():
     pl_server_hostname = app.config['PARKING_LOT_ADMIN_HOSTNAME']
     current_pl = ParkingLot.query.filter_by(pl_active='t').first()
+    print 'INIT_CLIENT: Requesting price updates from admin: %s ' %(pl_server_hostname)
     server_response = requests.post(pl_server_hostname + '/networksync/updatePrices', json={
         'parkinglot_id': current_pl.pl_id
     })
-    print 'INIT_CLIENT: Received response from admin: %s ' %(pl_server_hostname)
-    print server_response.text
+    print 'INIT_CLIENT: Received updated prices from admin: %s ' %(pl_server_hostname)
 
 log = logging.getLogger('apscheduler.executors.default')
 log.setLevel(logging.INFO)  # DEBUG

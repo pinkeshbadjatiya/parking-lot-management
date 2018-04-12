@@ -36,7 +36,6 @@ from admin.models import ParkingLot
 
 @login_manager.user_loader
 def load_user(user_id):
-    print user_id
     return Users.query.filter(Users.id == int(user_id)).first()
 
 
@@ -54,9 +53,9 @@ def init_admin():
     global scheduler
     pl_clients = app.config['PARKING_LOT_CLIENT_HOSTNAMES']
     for cID, cHost in pl_clients.iteritems():
+        print 'INIT_ADMIN: Requesting unsent utils from client: %s ' %(cID)
         client_response = requests.get(cHost + '/networksync/getunsentutils')
-        print 'INIT_ADMIN: Received response from client: %s ' %(cID)
-        print client_response.text
+        print 'INIT_ADMIN: Received unsent utils from client: %s ' %(cID)
     #scheduler.remove_job('init_admin')
 
 ####################
