@@ -141,7 +141,7 @@ def computerAvgParkingLotRate():
 @mod_client.route('/home', methods=['GET', 'POST'])
 @login_required
 def show_home():
-    return render_template('home.html', headerTitle='Parking Lot - Home')
+    return render_template('home.html', headerTitle='Parking Lot - Home', username=current_user.first_name + " " + current_user.last_name)
 
 
 @mod_client.route('/ParkingLotDisplay', methods=['GET', 'POST'])
@@ -310,7 +310,7 @@ def token_display():
 
         return render_template('tokendisplay.html', headerTitle='Customer Token', tokenId=token_id, entryTime=entry_time, plName=pl_Name, plAddress=pl_Address, operatorId=opId)
     else:
-        return redirect(url_for('client.show_home'))
+        return render_template('home.html', headerTitle='Parking Lot - Home', username=current_user.first_name + " " + current_user.last_name)
 
 
 @mod_client.route('/entry', methods=['GET', 'POST'])

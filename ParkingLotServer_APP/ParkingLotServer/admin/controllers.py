@@ -104,10 +104,7 @@ def get_parking_lots():
 def configure_parking_lots():
     plList, plListMap = get_parking_lots()
     if request.method == 'POST':
-        if request.form['button'] == 'delete_pl':
-            db.session.delete(plListMap[request.form['id']])
-            db.session.commit()
-            # delete operation to be performed
+        #Parking lot addition operation
         if request.form['button'] == 'add_pl':
             parking_lot = ParkingLot(request.form['pl_name'], request.form['pl_address'], request.form['pl_capacity'], request.form['pl_price'], True)
             db.session.add(parking_lot)
@@ -150,8 +147,12 @@ def view_utilization():
 
             selDateM1 = selDate - datetime.timedelta(days=1)
             selDateM2 = selDate - datetime.timedelta(days=2)
-
+            
+            print str(selected_date_day) + ' ' + str(selected_date_month) + ' ' + str(selected_date_year)
+            
             selDateStats = Utilization.query.filter(and_(Utilization.pl_id == parklot_id, Utilization.util_date == str(selDate))).first()
+            
+            #When no data for the date selected is found then error message is displayed
             if(selDateStats is None):
                 return render_template('utilization.html',
                                        headerTitle='Parking Lot - Utilization',                                  parkinglotList = plList,
@@ -159,11 +160,70 @@ def view_utilization():
                                        sdate = selected_date,
                                        spl = selected_pl)
             selDateM1Stats = Utilization.query.filter(and_(Utilization.pl_id == parklot_id, Utilization.util_date == str(selDateM1))).first()
+            
             selDateM2Stats = Utilization.query.filter(and_(Utilization.pl_id == parklot_id, Utilization.util_date == str(selDateM2))).first()
 
-            # daysUtil = str(selDateStats.avg_util) + ',' + str(selDateStats.avg_util) + ',' + str(selDateStats.avg_util)
-            # daysRev = str(selDateStats.total_rev) + ',' + str(selDateStats.total_rev) + ',' + str(selDateStats.total_rev)
-            # selDateM1Stats = ParkingLot.query.filter_by(pl_active='t')
+            #When no data for the previous day to date selected is found but data for previous to previous day is present
+            if(selDateM1Stats is None and selDateM2Stats is not None):
+                return render_template('utilization.html',
+                                        headerTitle='Parking Lot - Utilization',
+                                        parkinglotList=plList,
+                                        chartDataPresent='yes',
+                                        sdate=selected_date,
+                                        sdate_year=selected_date_year,
+                                        sdate_month=selected_date_month,
+                                        sdate_day=selected_date_day,
+                                        spl=selected_pl,
+                                        perHourUtil=selDateStats.util_per_hour,
+                                        perHourRev=selDateStats.rev_per_hour    ,
+                                        selDateUtil=selDateStats.avg_util,
+                                        selDateRev=selDateStats.total_rev,
+                                        selDateM1Util=0.0,
+                                        selDateM1Rev=0.0,
+                                        selDateM2Util=selDateM2Stats.avg_util,
+                                        selDateM2Rev=selDateM2Stats.total_rev)
+            
+            #When no data for the previous to previous day to date selected is found but data for previous day is present
+            elif(selDateM1Stats is not None and selDateM2Stats is None):
+                return render_template('utilization.html',
+                                        headerTitle='Parking Lot - Utilization',
+                                        parkinglotList=plList,
+                                        chartDataPresent='yes',
+                                        sdate=selected_date,
+                                        sdate_year=selected_date_year,
+                                        sdate_month=selected_date_month,
+                                        sdate_day=selected_date_day,
+                                        spl=selected_pl,
+                                        perHourUtil=selDateStats.util_per_hour,
+                                        perHourRev=selDateStats.rev_per_hour    ,
+                                        selDateUtil=selDateStats.avg_util,
+                                        selDateRev=selDateStats.total_rev,
+                                        selDateM1Util=selDateM1Stats.avg_util,
+                                        selDateM1Rev=selDateM1Stats.total_rev,
+                                        selDateM2Util=0.0,
+                                        selDateM2Rev=0.0)
+                                        
+            #When no data for the previous to previous day and previous day to date selected is found
+            elif(selDateM1Stats is None and selDateM2Stats is None):
+                return render_template('utilization.html',
+                                        headerTitle='Parking Lot - Utilization',
+                                        parkinglotList=plList,
+                                        chartDataPresent='yes',
+                                        sdate=selected_date,
+                                        sdate_year=selected_date_year,
+                                        sdate_month=selected_date_month,
+                                        sdate_day=selected_date_day,
+                                        spl=selected_pl,
+                                        perHourUtil=selDateStats.util_per_hour,
+                                        perHourRev=selDateStats.rev_per_hour    ,
+                                        selDateUtil=selDateStats.avg_util,
+                                        selDateRev=selDateStats.total_rev,
+                                        selDateM1Util=0.0,
+                                        selDateM1Rev=0.0,
+                                        selDateM2Util=0.0,
+                                        selDateM2Rev=0.0)
+
+            #Normal case when data for selected date and previous two days is found
             return render_template('utilization.html',
                                     headerTitle='Parking Lot - Utilization',
                                     parkinglotList=plList,
@@ -181,8 +241,6 @@ def view_utilization():
                                     selDateM1Rev=selDateM1Stats.total_rev,
                                     selDateM2Util=selDateM2Stats.avg_util,
                                     selDateM2Rev=selDateM2Stats.total_rev)
-                                    # prevDaysUtil=daysUtil,
-                                    # prevDaysRev=daysRev)
 
     return render_template('utilization.html', headerTitle='Parking Lot - Utilization', parkinglotList=plList, chartDataPresent='')
 

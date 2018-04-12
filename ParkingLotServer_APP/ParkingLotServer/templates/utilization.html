@@ -90,9 +90,9 @@
 		d.setDate({{sdate_day}});
 		d.setMonth({{sdate_month}}-1);
 		d.setFullYear({{sdate_year}});
-		var dm1 = new Date();
+		var dm1 = new Date(d);
 		dm1.setDate(d.getDate() - 1);
-		var dm2 = new Date();
+		var dm2 = new Date(d);
 		dm2.setDate(d.getDate() - 2);
 		var dStr = d.getDate() + '/' + (d.getMonth()+1) + '/' + d.getFullYear();
 		var dm1Str = dm1.getDate() + '/' + (dm1.getMonth()+1) + '/' + dm1.getFullYear();
@@ -100,14 +100,14 @@
 		
 		var trace1 = {
 			x: [dm2Str, dm1Str, dStr],
-			y: [{{selDateUtil}}, {{selDateM1Util}}, {{selDateM2Util}}],
+			y: [{{selDateM2Util}}, {{selDateM1Util}}, {{selDateUtil}}],
 			name: 'Utilization',
 			type: 'bar'
 		};
 
 		var trace2 = {
 			x: [dm2Str, dm1Str, dStr],
-			y: [{{selDateRev}}, {{selDateM1Rev}}, {{selDateM2Rev}}],
+			y: [{{selDateM2Rev}}, {{selDateM1Rev}}, {{selDateRev}}],
 			name: 'Revenue',
 			yaxis: 'y2',
 			type: 'line'

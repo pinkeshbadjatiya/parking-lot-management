@@ -1,8 +1,12 @@
 {% extends "base.html" %}
 {% block content %}
   <form>
+    <div style="margin-bottom:20px">
+        <h2>Welcome, {{username}}</h2>
+    </div>
+    
 	<div>
-  <a class="btn btn-primary btn-block" href="{{url_for('client.entry_processing')}}">Entry</a>
+    <a class="btn btn-primary btn-block" href="{{url_for('client.entry_processing')}}">Entry</a>
 	<a class="btn btn-primary btn-block" href="{{url_for('client.exit_processing')}}">Exit</a>
 	<a class="btn btn-primary btn-block" href="{{url_for('authentication.logout')}}">Logout</a>
 	</div>
